@@ -18,10 +18,12 @@ import AdminReports from "./pages/admin/AdminReports";
 // Supplier Layout and Pages
 import SupplierLayout from "./layouts/SupplierLayout";
 import SupplierHome from "./pages/supplier/SupplierHome";
+import SupplierCreate from "./pages/supplier/SupplierCreate";
 
 // Customer Layout and Pages
 import CustomerLayout from "./layouts/CustomerLayout";
 import CustomerHome from "./pages/customer/CustomerHome";
+import CustomerCreate from "./pages/customer/CustomerCreate";
 import StatusPage from "./pages/StatusPage";
 import "./index.css";
 function App() {
@@ -62,8 +64,6 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="complaints" element={<AdminComplaints />} />
             <Route path="reports" element={<AdminReports />} />
-            <Route path="notifications" element={<div className="p-8"><h1 className="text-2xl font-bold">Notifications - Coming Soon</h1></div>} />
-            <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>} />
           </Route>
           
           {/* Supplier Routes */}
@@ -76,15 +76,10 @@ function App() {
             }
           >
             <Route index element={<SupplierHome />} />
-            <Route path="products" element={<div className="p-8"><h1 className="text-2xl font-bold">Products Management - Coming Soon</h1></div>} />
-            <Route path="complaints" element={<div className="p-8"><h1 className="text-2xl font-bold">Supplier Complaints - Coming Soon</h1></div>} />
-            <Route path="analytics" element={<div className="p-8"><h1 className="text-2xl font-bold">Analytics - Coming Soon</h1></div>} />
-            <Route path="notifications" element={<div className="p-8"><h1 className="text-2xl font-bold">Notifications - Coming Soon</h1></div>} />
-            <Route path="profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Profile - Coming Soon</h1></div>} />
-            <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>} />
+            <Route path="create" element={<SupplierCreate />} />
           </Route>
           
-          {/* Customer Routes */}
+          {/* Customer Routes (My Complaints only) */}
           <Route
             path="/customer/*"
             element={
@@ -94,13 +89,7 @@ function App() {
             }
           >
             <Route index element={<CustomerHome />} />
-            <Route path="complaints" element={<div className="p-8"><h1 className="text-2xl font-bold">My Complaints - Coming Soon</h1></div>} />
-            <Route path="complaints/new" element={<div className="p-8"><h1 className="text-2xl font-bold">Submit Complaint - Coming Soon</h1></div>} />
-            <Route path="messages" element={<div className="p-8"><h1 className="text-2xl font-bold">Messages - Coming Soon</h1></div>} />
-            <Route path="history" element={<div className="p-8"><h1 className="text-2xl font-bold">History - Coming Soon</h1></div>} />
-            <Route path="notifications" element={<div className="p-8"><h1 className="text-2xl font-bold">Notifications - Coming Soon</h1></div>} />
-            <Route path="profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Profile - Coming Soon</h1></div>} />
-            <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>} />
+            <Route path="create" element={<CustomerCreate />} />
           </Route>
           <Route path="/" element={<Navigate to={getDashboardRoute()} />} />
         </Routes>

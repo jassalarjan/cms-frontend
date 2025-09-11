@@ -12,17 +12,28 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const { data } = await API.post("/auth/login", { email, password });
-    // Handle different response formats (simple server vs full server)
-    const userData = {
-      id: data.user?.id || data.user_id,
-      name: data.user?.name || data.name,
-      email: data.user?.email || data.email,
-      role: data.user?.role || data.role
-    };
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
+    try {
+      console.log("Attempting login for:", email);
+      const { data } = await API.post("/auth/login", { email, password });
+      console.log("Login response:", data);
+      
+      // The backend returns: { message, token, user: { id, name, email, role } }
+      const userData = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: data.user.role
+      };
+      
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      console.log("Login successful, user set:", userData);
+    } catch (error) {
+      console.error("Login error:", error);
+      console.error("Error response:", error.response?.data);
+      throw error;
+    }
   };
 
   const logout = () => {

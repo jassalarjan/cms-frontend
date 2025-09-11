@@ -49,7 +49,7 @@ export default function Login() {
       navigate("/"); // redirect to dashboard
     } catch (err) {
       console.error("Login error:", err);
-      const errorMessage = err.response?.data?.error || "Login failed. Please try again.";
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || "Login failed. Please try again.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -279,8 +279,8 @@ export default function Login() {
                 <h3 className="text-sm font-semibold text-gray-800 mb-1">Demo Access</h3>
                 <div className="text-xs text-gray-600 space-y-1">
                   <div><strong>Admin:</strong> admin@cms.com / admin123</div>
-                  <div><strong>Supplier:</strong> supplier1@example.com / password123</div>
-                  <div><strong>Customer:</strong> customer1@example.com / password123</div>
+                  <div><strong>Supplier:</strong> supplier@test.com / password123</div>
+                  <div><strong>Customer:</strong> customer@test.com / password123</div>
                 </div>
               </div>
             </div>

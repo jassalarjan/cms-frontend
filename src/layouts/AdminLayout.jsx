@@ -5,12 +5,9 @@ import {
   UserGroupIcon,
   ExclamationTriangleIcon,
   ChartBarIcon,
-  Cog6ToothIcon,
   HomeIcon,
   Bars3Icon,
   XMarkIcon,
-  BellIcon,
-  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
 const AdminLayout = () => {
@@ -22,8 +19,6 @@ const AdminLayout = () => {
     { name: 'Users', href: '/admin/users', icon: UserGroupIcon },
     { name: 'Complaints', href: '/admin/complaints', icon: ExclamationTriangleIcon },
     { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
-    { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
-    { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon },
   ];
 
   return (
@@ -114,23 +109,7 @@ const AdminLayout = () => {
                 </div>
               </nav>
 
-              {/* Quick Actions */}
-              <div className="mt-8 px-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                  Quick Actions
-                </h3>
-                <div className="space-y-2">
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                    Export Data
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                    System Backup
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                    View Logs
-                  </button>
-                </div>
-              </div>
+              {/* Quick Actions removed for simplified admin */}
             </div>
           </div>
         </div>

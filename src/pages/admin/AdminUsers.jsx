@@ -96,7 +96,7 @@ export default function AdminUsers() {
 
   const approveUser = async (userId) => {
     try {
-      await API.patch(`/admin/users/${userId}/status`, { status: 'ACTIVE' });
+      await API.post(`/admin/users/${userId}/approve`);
       setUsers(users.map(u => u.user_id === userId ? { ...u, status: 'ACTIVE' } : u));
       toast.success('User approved successfully');
     } catch (err) {
@@ -105,10 +105,10 @@ export default function AdminUsers() {
     }
   };
 
-  const rejectUser = async (userId) => {
+  const rejectUser = async (userId, reason) => {
     try {
-      await API.patch(`/admin/users/${userId}/status`, { status: 'INACTIVE' });
-      setUsers(users.map(u => u.user_id === userId ? { ...u, status: 'INACTIVE' } : u));
+      await API.post(`/admin/users/${userId}/reject`, { reason });
+      setUsers(users.map(u => u.user_id === userId ? { ...u, status: 'REJECTED' } : u));
       toast.success('User rejected successfully');
     } catch (err) {
       console.error('Error rejecting user:', err);

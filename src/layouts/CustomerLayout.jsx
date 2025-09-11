@@ -19,14 +19,7 @@ const CustomerLayout = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/customer', icon: HomeIcon },
-    { name: 'My Complaints', href: '/customer/complaints', icon: ExclamationTriangleIcon },
-    { name: 'Submit Complaint', href: '/customer/complaints/new', icon: PlusCircleIcon },
-    { name: 'Messages', href: '/customer/messages', icon: ChatBubbleLeftRightIcon },
-    { name: 'History', href: '/customer/history', icon: DocumentTextIcon },
-    { name: 'Notifications', href: '/customer/notifications', icon: BellIcon },
-    { name: 'Profile', href: '/customer/profile', icon: UserIcon },
-    { name: 'Settings', href: '/customer/settings', icon: Cog6ToothIcon },
+    { name: 'My Complaints', href: '/customer', icon: ExclamationTriangleIcon },
   ];
 
   return (
@@ -117,27 +110,7 @@ const CustomerLayout = () => {
                 </div>
               </nav>
 
-              {/* Quick Actions */}
-              <div className="mt-8 px-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                  Quick Actions
-                </h3>
-                <div className="space-y-2">
-                  <NavLink 
-                    to="/customer/complaints/new"
-                    className="w-full text-left px-4 py-3 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-medium flex items-center"
-                  >
-                    <PlusCircleIcon className="h-4 w-4 mr-2" />
-                    New Complaint
-                  </NavLink>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                    Contact Support
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                    FAQ & Help
-                  </button>
-                </div>
-              </div>
+            
 
               {/* Status Summary */}
               <div className="mt-6 px-6">

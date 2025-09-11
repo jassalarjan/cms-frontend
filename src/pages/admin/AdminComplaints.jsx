@@ -47,7 +47,7 @@ export default function AdminComplaints() {
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/complaints-enhanced");
+      const res = await API.get("/complaints/admin/enhanced");
       setComplaints(res.data);
     } catch (err) {
       console.error('Error fetching complaints:', err);
@@ -63,10 +63,8 @@ export default function AdminComplaints() {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(complaint => 
-        complaint.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        complaint.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        complaint.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        complaint.product_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        complaint.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        complaint.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -90,9 +88,9 @@ export default function AdminComplaints() {
 
   const updateComplaintStatus = async (complaintId, status) => {
     try {
-      await API.patch(`/complaints-enhanced/${complaintId}/status`, { status });
+      await API.put(`/complaints/${complaintId}/status`, { status });
       setComplaints(complaints.map(c => 
-        c.complaint_id === complaintId ? { ...c, status } : c
+        c.id === complaintId ? { ...c, status } : c
       ));
       toast.success(`Complaint status updated to ${status}`);
     } catch (err) {
@@ -107,8 +105,8 @@ export default function AdminComplaints() {
     }
 
     try {
-      await API.delete(`/complaints-enhanced/${complaintId}`);
-      setComplaints(complaints.filter(c => c.complaint_id !== complaintId));
+      await API.delete(`/complaints/${complaintId}`);
+      setComplaints(complaints.filter(c => c.id !== complaintId));
       toast.success('Complaint deleted successfully');
     } catch (err) {
       console.error('Error deleting complaint:', err);
@@ -123,18 +121,11 @@ export default function AdminComplaints() {
     }
 
     try {
-      await API.post(`/complaints-enhanced/${selectedComplaint.complaint_id}/responses`, {
-        response: response,
-        status: newStatus || selectedComplaint.status
+      await API.post(`/complaints/${selectedComplaint.id}/responses`, {
+        message: response
       });
-      
-      if (newStatus) {
-        setComplaints(complaints.map(c => 
-          c.complaint_id === selectedComplaint.complaint_id 
-            ? { ...c, status: newStatus, admin_response: response } 
-            : c
-        ));
-      }
+
+      if (newStatus) await updateComplaintStatus(selectedComplaint.id, newStatus);
 
       setShowResponseModal(false);
       setResponse('');
@@ -168,18 +159,18 @@ export default function AdminComplaints() {
 
   const complaintColumns = [
     {
-      key: 'complaint_id',
+      key: 'id',
       title: 'ID',
       render: (value) => `#${value}`
     },
     {
-      key: 'subject',
-      title: 'Subject',
+      key: 'title',
+      title: 'Title',
       render: (value, item) => (
         <div>
           <div className="font-medium text-gray-900 truncate max-w-xs">{value}</div>
           <div className="text-sm text-gray-500">
-            {item.customer_name} • {item.product_name}
+            {item.customer_name}
           </div>
         </div>
       )
@@ -244,7 +235,7 @@ export default function AdminComplaints() {
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
               e.stopPropagation();
-              updateComplaintStatus(item.complaint_id, e.target.value);
+              updateComplaintStatus(item.id, e.target.value);
             }}
             value={item.status}
             className="text-xs border border-gray-200 rounded px-2 py-1 focus:border-blue-500"
@@ -258,7 +249,7 @@ export default function AdminComplaints() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              deleteComplaint(item.complaint_id);
+              deleteComplaint(item.id);
             }}
             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Delete Complaint"

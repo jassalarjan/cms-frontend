@@ -18,13 +18,7 @@ const SupplierLayout = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/supplier', icon: HomeIcon },
-    { name: 'My Products', href: '/supplier/products', icon: ShoppingBagIcon },
-    { name: 'Complaints', href: '/supplier/complaints', icon: ExclamationTriangleIcon },
-    { name: 'Analytics', href: '/supplier/analytics', icon: ChartBarIcon },
-    { name: 'Notifications', href: '/supplier/notifications', icon: BellIcon },
-    { name: 'Profile', href: '/supplier/profile', icon: UserIcon },
-    { name: 'Settings', href: '/supplier/settings', icon: Cog6ToothIcon },
+    { name: 'Complaint Management', href: '/supplier', icon: ExclamationTriangleIcon },
   ];
 
   return (
@@ -88,7 +82,7 @@ const SupplierLayout = () => {
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="px-6 pb-4 border-b border-gray-200">
                 <h2 className="text-xl font-bold text-gray-900">Supplier Portal</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage your products and complaints</p>
+                <p className="text-sm text-gray-600 mt-1">Manage complaints</p>
               </div>
               <nav className="mt-6 px-6">
                 <div className="space-y-2">
@@ -115,26 +109,7 @@ const SupplierLayout = () => {
                 </div>
               </nav>
 
-              {/* Quick Stats */}
-              <div className="mt-8 px-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                  Quick Stats
-                </h3>
-                <div className="space-y-3">
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700">Active Products</span>
-                      <span className="text-sm font-semibold text-green-600">12</span>
-                    </div>
-                  </div>
-                  <div className="bg-orange-50 p-3 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700">Open Complaints</span>
-                      <span className="text-sm font-semibold text-orange-600">3</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Removed quick stats for simplified UI */}
             </div>
           </div>
         </div>

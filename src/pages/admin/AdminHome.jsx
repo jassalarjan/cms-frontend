@@ -58,7 +58,7 @@ export default function AdminHome() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await API.get("/complaints-enhanced");
+      const res = await API.get("/complaints/admin/enhanced");
       setComplaints(res.data);
     } catch (err) {
       console.error('Error fetching complaints:', err);
@@ -211,7 +211,7 @@ export default function AdminHome() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ status, value }) => `${status}: ${value}`}
+                label={({ status, total }) => `${status}: ${total}`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="total"
@@ -266,8 +266,8 @@ export default function AdminHome() {
             </Link>
           </div>
           <div className="space-y-4">
-            {recentUsers.map((user) => (
-              <div key={user.user_id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+            {recentUsers.map((user, index) => (
+              <div key={user.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
                 <div className="flex items-center">
                   <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
                     {user.name?.charAt(0)?.toUpperCase()}
@@ -300,10 +300,10 @@ export default function AdminHome() {
             </Link>
           </div>
           <div className="space-y-4">
-            {recentComplaints.map((complaint) => (
-              <div key={complaint.complaint_id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+            {recentComplaints.map((complaint, index) => (
+              <div key={complaint.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900 truncate">{complaint.subject}</p>
+                  <p className="font-medium text-gray-900 truncate">{complaint.title}</p>
                   <p className="text-sm text-gray-500">
                     {complaint.customer_name} • {complaint.created_at ? format(new Date(complaint.created_at), 'MMM dd') : 'N/A'}
                   </p>

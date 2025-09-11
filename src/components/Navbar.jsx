@@ -36,19 +36,19 @@ export default function Navbar() {
       return [
         ...baseItems,
         { name: "User Management", href: "/admin/users", icon: UserGroupIcon },
+        { name: "Complaints", href: "/admin/complaints", icon: ExclamationTriangleIcon },
         { name: "Reports", href: "/admin/reports", icon: ChartBarIcon },
-        { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon },
       ];
     } else if (user?.role === "SUPPLIER") {
       return [
         ...baseItems,
-        { name: "My Complaints", href: "/supplier/complaints", icon: ExclamationTriangleIcon },
+        { name: "My Complaints", href: "/supplier", icon: ExclamationTriangleIcon },
         { name: "Create Complaint", href: "/supplier/create", icon: ExclamationTriangleIcon },
       ];
     } else if (user?.role === "CUSTOMER") {
       return [
         ...baseItems,
-        { name: "My Complaints", href: "/customer/complaints", icon: ExclamationTriangleIcon },
+        { name: "My Complaints", href: "/customer", icon: ExclamationTriangleIcon },
       ];
     }
     return baseItems;
@@ -138,29 +138,7 @@ export default function Navbar() {
                   >
                     <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                       <div className="py-1">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={() => navigate("/profile")}
-                              className={`${active ? "bg-gray-100" : ""} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                            >
-                              <UserCircleIcon className="h-4 w-4 mr-3" />
-                              Profile
-                            </button>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={() => navigate("/settings")}
-                              className={`${active ? "bg-gray-100" : ""} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                            >
-                              <Cog6ToothIcon className="h-4 w-4 mr-3" />
-                              Settings
-                            </button>
-                          )}
-                        </Menu.Item>
-                        <hr className="my-1" />
+                      
                         <Menu.Item>
                           {({ active }) => (
                             <button
@@ -231,26 +209,10 @@ export default function Navbar() {
               </div>
             </div>
             <div className="mt-3 space-y-1">
-              <button
-                onClick={() => {
-                  navigate("/profile");
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center w-full px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-              >
-                <UserCircleIcon className="h-5 w-5 mr-3" />
-                Profile
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/settings");
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center w-full px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-              >
-                <Cog6ToothIcon className="h-5 w-5 mr-3" />
-                Settings
-              </button>
+              {user?.role === 'ADMIN' && (
+                <>
+                </>
+              )}
               <button
                 onClick={handleLogout}
                 className="flex items-center w-full px-4 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-red-50"

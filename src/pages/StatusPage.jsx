@@ -21,12 +21,14 @@ const StatusPage = () => {
 
   const checkBackendStatus = async () => {
     try {
-      // Test backend connection
-      const response = await API.get('/');
-      if (response.status === 200) {
+      // Test backend connection using the root endpoint
+      const response = await fetch('http://localhost:5000/');
+      if (response.ok) {
         setStatus(prev => ({ ...prev, backend: 'active' }));
         // If backend is working, test database
         await checkDatabaseStatus();
+      } else {
+        throw new Error('Backend not responding');
       }
     } catch (error) {
       console.error('Backend check failed:', error);
@@ -36,9 +38,23 @@ const StatusPage = () => {
 
   const checkDatabaseStatus = async () => {
     try {
-      // Try to fetch users to test database
-      const response = await API.get('/admin/users');
-      setStatus(prev => ({ ...prev, database: 'active' }));
+      // Try to login with demo credentials to test database
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'admin@cms.com',
+          password: 'admin123'
+        })
+      });
+      
+      if (response.ok) {
+        setStatus(prev => ({ ...prev, database: 'active' }));
+      } else {
+        throw new Error('Database connection failed');
+      }
     } catch (error) {
       console.error('Database check failed:', error);
       setStatus(prev => ({ ...prev, database: 'error' }));
