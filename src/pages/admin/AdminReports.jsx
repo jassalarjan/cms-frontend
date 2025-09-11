@@ -120,25 +120,6 @@ export default function AdminReports() {
     }
   };
 
-  const exportReport = async (format) => {
-    try {
-      const response = await API.get(`/reports/export?format=${format}&range=${dateRange}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `complaints_report_${dateRange}.${format}`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      toast.success(`Report exported as ${format.toUpperCase()}`);
-    } catch (err) {
-      console.error('Error exporting report:', err);
-      toast.error('Failed to export report');
-    }
-  };
 
   const MetricCard = ({ title, value, change, icon: Icon, color, format = 'number' }) => {
     const formatValue = (val) => {
@@ -217,22 +198,6 @@ export default function AdminReports() {
             <option value="6months">Last 6 Months</option>
             <option value="1year">Last Year</option>
           </select>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => exportReport('pdf')}
-              className="btn-secondary btn-sm"
-            >
-              <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-              Export PDF
-            </button>
-            <button
-              onClick={() => exportReport('excel')}
-              className="btn-primary btn-sm"
-            >
-              <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-              Export Excel
-            </button>
-          </div>
         </div>
       </div>
 

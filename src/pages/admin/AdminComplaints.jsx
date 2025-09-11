@@ -48,7 +48,7 @@ export default function AdminComplaints() {
     setLoading(true);
     try {
       const res = await API.get("/complaints/admin/enhanced");
-      setComplaints(res.data);
+      setComplaints(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Error fetching complaints:', err);
       toast.error('Failed to load complaints');

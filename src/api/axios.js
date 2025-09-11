@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api", // 🔧 Fixed to include /api prefix
+  baseURL: "https://cms-backend.jassalarjansingh.workers.dev/api", // 🔧 Fixed to include /api prefix
 });
 
 // Add JWT to headers if available

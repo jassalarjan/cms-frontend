@@ -50,7 +50,7 @@ export default function AdminHome() {
   const fetchUsers = async () => {
     try {
       const res = await API.get("/admin/users");
-      setUsers(res.data);
+      setUsers(res.data.data || []);
     } catch (err) {
       console.error('Error fetching users:', err);
     }
@@ -59,7 +59,7 @@ export default function AdminHome() {
   const fetchComplaints = async () => {
     try {
       const res = await API.get("/complaints/admin/enhanced");
-      setComplaints(res.data);
+      setComplaints(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Error fetching complaints:', err);
     }
@@ -267,7 +267,7 @@ export default function AdminHome() {
           </div>
           <div className="space-y-4">
             {recentUsers.map((user, index) => (
-              <div key={user.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+              <div key={user.id || `user-${index}`} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
                 <div className="flex items-center">
                   <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
                     {user.name?.charAt(0)?.toUpperCase()}
@@ -301,7 +301,7 @@ export default function AdminHome() {
           </div>
           <div className="space-y-4">
             {recentComplaints.map((complaint, index) => (
-              <div key={complaint.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+              <div key={complaint.id || `complaint-${index}`} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
                 <div className="flex-1">
                   <p className="font-medium text-gray-900 truncate">{complaint.title}</p>
                   <p className="text-sm text-gray-500">

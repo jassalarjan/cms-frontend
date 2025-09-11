@@ -3,8 +3,8 @@ import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 
-// ✅ InputField outside so it's not recreated on each render
-const InputField = ({
+// Memoized InputField component to prevent re-renders
+const InputField = React.memo(({
   field,
   label,
   type = "text",
@@ -15,77 +15,85 @@ const InputField = ({
   value,
   error,
   onChange,
-}) => (
-  <div className="mb-4">
-    <label
-      htmlFor={field}
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
+}) => {
+  // Create a stable onChange handler
+  const handleChange = React.useCallback((e) => {
+    onChange(field, e.target.value);
+  }, [field, onChange]);
 
-    {as === "textarea" ? (
-      <textarea
-        id={field}
-        placeholder={placeholder}
-        className={`input-field resize-none ${
-          error ? "border-red-500 focus:ring-red-500" : ""
-        }`}
-        rows={4}
-        value={value}
-        onChange={(e) => onChange(field, e.target.value)}
-        required={required}
-      />
-    ) : as === "select" ? (
-      <select
-        id={field}
-        className={`input-field ${
-          error ? "border-red-500 focus:ring-red-500" : ""
-        }`}
-        value={value}
-        onChange={(e) => onChange(field, e.target.value)}
-        required={required}
+  return (
+    <div className="mb-4">
+      <label
+        htmlFor={field}
+        className="block text-sm font-medium text-gray-700 mb-1"
       >
-        <option value="">Select an option</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    ) : (
-      <input
-        id={field}
-        type={type}
-        placeholder={placeholder}
-        className={`input-field ${
-          error ? "border-red-500 focus:ring-red-500" : ""
-        }`}
-        value={value}
-        onChange={(e) => onChange(field, e.target.value)}
-        required={required}
-      />
-    )}
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
 
-    {error && (
-      <p className="mt-1 text-sm text-red-600 flex items-center">
-        <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
-        {error}
-      </p>
-    )}
-  </div>
-);
+      {as === "textarea" ? (
+        <textarea
+          id={field}
+          placeholder={placeholder}
+          className={`input-field resize-none ${
+            error ? "border-red-500 focus:ring-red-500" : ""
+          }`}
+          rows={4}
+          value={value}
+          onChange={handleChange}
+          required={required}
+        />
+      ) : as === "select" ? (
+        <select
+          id={field}
+          className={`input-field ${
+            error ? "border-red-500 focus:ring-red-500" : ""
+          }`}
+          value={value}
+          onChange={handleChange}
+          required={required}
+        >
+          <option value="">Select an option</option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          id={field}
+          type={type}
+          placeholder={placeholder}
+          className={`input-field ${
+            error ? "border-red-500 focus:ring-red-500" : ""
+          }`}
+          value={value}
+          onChange={handleChange}
+          required={required}
+        />
+      )}
+
+      {error && (
+        <p className="mt-1 text-sm text-red-600 flex items-center">
+          <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+});
 
 export default function ComplaintForm() {
   const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     title: "",
     product_name: "",
+    product_model: "",
     description: "",
     category: "",
     priority: "",
-    client_name: "",
-    contact_number: "",
+    manufacturing_year: "",
+    warranty_handler: "",
     date_of_manufacture: "",
     warranty_status: "N/A",
     customer_id: "",
@@ -94,13 +102,19 @@ export default function ComplaintForm() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // Memoize the form change handler
+  const handleFormChange = React.useCallback((field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
   useEffect(() => {
     if (user) {
       setFormData(prev => ({
         ...prev,
         customer_id: user.id,
-        client_name: user.name,
-        contact_number: user.phone || prev.contact_number, // If phone added to user later
       }));
     }
   }, [user]);
@@ -146,7 +160,6 @@ export default function ComplaintForm() {
     if (!formData.description || formData.description.trim().length < 10) newErrors.description = "Description must be at least 10 characters";
     if (!formData.product_name) newErrors.product_name = "Product name is required";
     if (!formData.category) newErrors.category = "Category is required";
-    if (!formData.client_name || formData.client_name.trim().length < 2) newErrors.client_name = "Client name must be at least 2 characters";
     if (!formData.date_of_manufacture) newErrors.date_of_manufacture = "Date of manufacture is required";
     else {
       const date = new Date(formData.date_of_manufacture);
@@ -174,14 +187,13 @@ export default function ComplaintForm() {
         description: formData.description,
         customer_id: formData.customer_id,
         product_name: formData.product_name,
+        product_model: formData.product_model,
         category: formData.category,
         priority: formData.priority,
-        client_name: formData.client_name,
+        manufacturing_year: formData.manufacturing_year,
+        warranty_handler: formData.warranty_handler,
         date_of_manufacture: formData.date_of_manufacture,
         warranty_status: formData.warranty_status,
-        // Optional: product_model, manufacturing_year, etc. set to empty if not provided
-        product_model: formData.product_model || "",
-        manufacturing_year: formData.manufacturing_year || null,
       };
 
       const response = await API.post("/complaints", submitData);
@@ -193,16 +205,15 @@ export default function ComplaintForm() {
       setFormData({
         title: "",
         product_name: "",
+        product_model: "",
         description: "",
         category: "",
         priority: "",
-        client_name: user.name,
-        contact_number: "",
+        manufacturing_year: "",
+        warranty_handler: "",
         date_of_manufacture: "",
         warranty_status: "N/A",
         customer_id: user.id,
-        product_model: "",
-        manufacturing_year: "",
       });
       setErrors({});
     } catch (error) {
@@ -232,6 +243,15 @@ export default function ComplaintForm() {
         required
         value={formData.product_name}
         error={errors.product_name}
+        onChange={handleInputChange}
+      />
+
+      <InputField
+        field="product_model"
+        label="Product Model"
+        placeholder="Enter product model (if applicable)"
+        value={formData.product_model}
+        error={errors.product_model}
         onChange={handleInputChange}
       />
 
@@ -268,12 +288,21 @@ export default function ComplaintForm() {
       />
 
       <InputField
-        field="client_name"
-        label="Client Name"
-        placeholder="Enter client name (pre-filled with your name)"
-        required
-        value={formData.client_name}
-        error={errors.client_name}
+        field="manufacturing_year"
+        label="Manufacturing Year"
+        type="number"
+        placeholder="Enter manufacturing year"
+        value={formData.manufacturing_year}
+        error={errors.manufacturing_year}
+        onChange={handleInputChange}
+      />
+
+      <InputField
+        field="warranty_handler"
+        label="Warranty Handler"
+        placeholder="Enter warranty handler (e.g., manufacturer name)"
+        value={formData.warranty_handler}
+        error={errors.warranty_handler}
         onChange={handleInputChange}
       />
 
@@ -295,25 +324,6 @@ export default function ComplaintForm() {
         error={errors.warranty_status}
         onChange={handleInputChange}
         options={warrantyOptions}
-      />
-
-      <InputField
-        field="contact_number"
-        label="Contact Number"
-        placeholder="Enter your number"
-        value={formData.contact_number}
-        error={errors.contact_number}
-        onChange={handleInputChange}
-      />
-
-      <InputField
-        field="contact_number"
-        label="Contact Number"
-        placeholder="Enter your number"
-        required
-        value={formData.contact_number}
-        error={errors.contact_number}
-        onChange={handleInputChange}
       />
 
       <button

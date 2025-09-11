@@ -32,6 +32,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
+
   const navigate = useNavigate();
 
   const validateStep = (step) => {
@@ -98,17 +99,22 @@ export default function Register() {
     }
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = React.useCallback((field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
-  };
+  }, [errors]);
 
-  const InputField = ({ field, label, type = "text", placeholder, icon: Icon, required = false, showToggle = false }) => {
+  const InputField = React.memo(({ field, label, type = "text", placeholder, icon: Icon, required = false, showToggle = false }) => {
     const isPassword = type === 'password';
     const showPasswordValue = field === 'password' ? showPassword : showConfirmPassword;
     const togglePassword = field === 'password' ? setShowPassword : setShowConfirmPassword;
+    
+    // Memoize the password toggle handler
+    const handleTogglePassword = React.useCallback(() => {
+      togglePassword(!showPasswordValue);
+    }, [togglePassword, showPasswordValue]);
     
     return (
       <div className="mb-4">

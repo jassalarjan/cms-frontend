@@ -37,6 +37,14 @@ export default function AdminUsers() {
     password: ''
   });
 
+  // Memoize form handlers
+  const handleFormChange = React.useCallback((field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -48,8 +56,8 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/admin/users");
-      setUsers(res.data);
+      const res = await API.get("/admin/users?page=1&limit=1000");
+      setUsers(res.data.data || []);
     } catch (err) {
       console.error('Error fetching users:', err);
       toast.error('Failed to load users');
@@ -101,7 +109,14 @@ export default function AdminUsers() {
       toast.success('User approved successfully');
     } catch (err) {
       console.error('Error approving user:', err);
-      toast.error('Failed to approve user');
+      if (err.response?.status === 403) {
+        toast.error('You do not have permission to approve users. Please contact your administrator.');
+      } else if (err.response?.status === 401) {
+        toast.error('Your session has expired. Please log in again.');
+        // Consider adding logic to redirect to login page
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to approve user');
+      }
     }
   };
 
@@ -133,9 +148,21 @@ export default function AdminUsers() {
 
   const handleAddUser = async (e) => {
     e.preventDefault();
+    if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim() || !formData.role) {
+      toast.error('Name, email, password, and role are required');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
     try {
       const res = await API.post('/admin/users', formData);
-      setUsers([...users, res.data]);
+      setUsers([...users, res.data.data]);
       setShowAddModal(false);
       setFormData({
         name: '',
@@ -148,7 +175,8 @@ export default function AdminUsers() {
       toast.success('User added successfully');
     } catch (err) {
       console.error('Error adding user:', err);
-      toast.error('Failed to add user');
+      const message = err.response?.data?.message || 'Failed to add user';
+      toast.error(message);
     }
   };
 
@@ -161,7 +189,7 @@ export default function AdminUsers() {
       }
       
       const res = await API.patch(`/admin/users/${selectedUser.user_id}`, updateData);
-      setUsers(users.map(u => u.user_id === selectedUser.user_id ? res.data : u));
+      setUsers(users.map(u => u.user_id === selectedUser.user_id ? res.data.data : u));
       setShowEditModal(false);
       setSelectedUser(null);
       toast.success('User updated successfully');
@@ -312,7 +340,8 @@ export default function AdminUsers() {
     }
   ];
 
-  const UserForm = ({ onSubmit, title, isEdit = false }) => (
+  // Memoize the UserForm component to prevent unnecessary re-renders
+  const UserForm = React.memo(({ onSubmit, title, isEdit = false }) => (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -322,7 +351,7 @@ export default function AdminUsers() {
             required
             className="input-field"
             value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            onChange={(e) => handleFormChange('name', e.target.value)}
             placeholder="Enter full name"
           />
         </div>
@@ -333,7 +362,7 @@ export default function AdminUsers() {
             required
             className="input-field"
             value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            onChange={(e) => handleFormChange('email', e.target.value)}
             placeholder="Enter email address"
             disabled={isEdit}
           />
@@ -343,7 +372,7 @@ export default function AdminUsers() {
           <select
             className="input-field"
             value={formData.role}
-            onChange={(e) => setFormData({...formData, role: e.target.value})}
+            onChange={(e) => handleFormChange('role', e.target.value)}
           >
             <option value="CUSTOMER">Customer</option>
             <option value="SUPPLIER">Supplier</option>
@@ -356,7 +385,7 @@ export default function AdminUsers() {
             type="tel"
             className="input-field"
             value={formData.phone}
-            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            onChange={(e) => handleFormChange('phone', e.target.value)}
             placeholder="Enter phone number"
           />
         </div>
@@ -366,7 +395,7 @@ export default function AdminUsers() {
             className="input-field"
             rows={3}
             value={formData.address}
-            onChange={(e) => setFormData({...formData, address: e.target.value})}
+            onChange={(e) => handleFormChange('address', e.target.value)}
             placeholder="Enter address"
           />
         </div>
@@ -378,14 +407,14 @@ export default function AdminUsers() {
             type="password"
             className="input-field"
             value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            onChange={(e) => handleFormChange('password', e.target.value)}
             placeholder={isEdit ? "Enter new password" : "Enter password"}
             required={!isEdit}
           />
         </div>
       </div>
     </form>
-  );
+  ));
 
   if (loading) {
     return (

@@ -6,7 +6,22 @@ const ProtectedRoute = ({ children, role }) => {
   const { user } = useContext(AuthContext);
 
   if (!user) return <Navigate to="/login" />;
-  if (role && user.role !== role) return <Navigate to="/" />;
+  
+  // Admin has access to everything
+  if (user.role === 'ADMIN') return children;
+  
+  // For non-admins, check specific role requirement
+  if (role && user.role !== role) {
+    // Redirect based on user's role
+    switch (user.role) {
+      case 'CUSTOMER':
+        return <Navigate to="/customer" />;
+      case 'SUPPLIER':
+        return <Navigate to="/supplier" />;
+      default:
+        return <Navigate to="/" />;
+    }
+  }
 
   return children;
 };
