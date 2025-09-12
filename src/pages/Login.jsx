@@ -286,12 +286,7 @@ export default function Login() {
             </div>
           </div>
           
-          {/* Quick Status Link */}
-          <div className="text-center">
-            <Link to="/status" className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
-              Check System Status
-            </Link>
-          </div>
+         
         </div>
       </div>
     </div>
