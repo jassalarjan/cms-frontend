@@ -268,23 +268,7 @@ export default function Login() {
           </div>
 
           {/* Demo Credentials */}
-          <div className="glass rounded-xl p-4 animate-slide-in">
-            <div className="flex items-start">
-              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                <svg className="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              {/* <div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-1">Demo Access</h3>
-                <div className="text-xs text-gray-600 space-y-1">
-                  <div><strong>Admin:</strong> admin@cms.com / admin123</div>
-                  <div><strong>Supplier:</strong> supplier@test.com / password123</div>
-                  <div><strong>Customer:</strong> customer@test.com / password123</div>
-                </div>
-              </div> */}
-            </div>
-          </div>
+          
           
          
         </div>
