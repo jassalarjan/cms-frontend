@@ -117,9 +117,12 @@ export default function SupplierHome() {
               )
               .map((c) => (
                 <li key={c.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{c.title}</p>
-                    <p className="text-sm text-gray-500">Customer: {c.customer_name}</p>
+                  <div className="min-w-0 flex items-center gap-3">
+                    <span className="font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded text-sm min-w-max">{c.complaint_id}</span>
+                    <div>
+                      <p className="font-medium text-gray-900 truncate">{c.title}</p>
+                      <p className="text-sm text-gray-500">Customer: {c.customer_name}</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <select

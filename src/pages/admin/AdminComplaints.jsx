@@ -159,6 +159,11 @@ export default function AdminComplaints() {
 
   const complaintColumns = [
     {
+      key: 'complaint_id',
+      title: 'Ticket ID',
+      render: (value, item) => item.complaint_id || `#${item.id}`
+    },
+    {
       key: 'id',
       title: 'ID',
       render: (value) => `#${value}`

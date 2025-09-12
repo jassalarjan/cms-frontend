@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import API from '../../api/axios';
 import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import Loading from '../../components/Loading';
+import { UserForm } from '../../components/forms/UserForm';
+import { format } from 'date-fns';
 import { 
   PlusIcon,
   EyeIcon,
@@ -15,7 +17,6 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -340,82 +341,6 @@ export default function AdminUsers() {
     }
   ];
 
-  // Memoize the UserForm component to prevent unnecessary re-renders
-  const UserForm = React.memo(({ onSubmit, title, isEdit = false }) => (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-          <input
-            type="text"
-            required
-            className="input-field"
-            value={formData.name}
-            onChange={(e) => handleFormChange('name', e.target.value)}
-            placeholder="Enter full name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input
-            type="email"
-            required
-            className="input-field"
-            value={formData.email}
-            onChange={(e) => handleFormChange('email', e.target.value)}
-            placeholder="Enter email address"
-            disabled={isEdit}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-          <select
-            className="input-field"
-            value={formData.role}
-            onChange={(e) => handleFormChange('role', e.target.value)}
-          >
-            <option value="CUSTOMER">Customer</option>
-            <option value="SUPPLIER">Supplier</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-          <input
-            type="tel"
-            className="input-field"
-            value={formData.phone}
-            onChange={(e) => handleFormChange('phone', e.target.value)}
-            placeholder="Enter phone number"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-          <textarea
-            className="input-field"
-            rows={3}
-            value={formData.address}
-            onChange={(e) => handleFormChange('address', e.target.value)}
-            placeholder="Enter address"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {isEdit ? 'Password (leave blank to keep current)' : 'Password'}
-          </label>
-          <input
-            type="password"
-            className="input-field"
-            value={formData.password}
-            onChange={(e) => handleFormChange('password', e.target.value)}
-            placeholder={isEdit ? "Enter new password" : "Enter password"}
-            required={!isEdit}
-          />
-        </div>
-      </div>
-    </form>
-  ));
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -643,21 +568,27 @@ export default function AdminUsers() {
         title="Add New User"
         size="xl"
       >
-        <UserForm onSubmit={handleAddUser} title="Add User" />
-        <Modal.Footer>
-          <button
-            onClick={() => setShowAddModal(false)}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleAddUser}
-            className="btn-primary"
-          >
-            Add User
-          </button>
-        </Modal.Footer>
+        <form onSubmit={handleAddUser}>
+          <UserForm 
+            formData={formData} 
+            onFormChange={handleFormChange}
+          />
+          <Modal.Footer>
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+            >
+              Add User
+            </button>
+          </Modal.Footer>
+        </form>
       </Modal>
 
       {/* Edit User Modal */}
@@ -667,21 +598,28 @@ export default function AdminUsers() {
         title="Edit User"
         size="xl"
       >
-        <UserForm onSubmit={handleEditUser} title="Edit User" isEdit={true} />
-        <Modal.Footer>
-          <button
-            onClick={() => setShowEditModal(false)}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleEditUser}
-            className="btn-primary"
-          >
-            Update User
-          </button>
-        </Modal.Footer>
+        <form onSubmit={handleEditUser}>
+          <UserForm 
+            formData={formData} 
+            onFormChange={handleFormChange}
+            isEdit={true}
+          />
+          <Modal.Footer>
+            <button
+              type="button"
+              onClick={() => setShowEditModal(false)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+            >
+              Update User
+            </button>
+          </Modal.Footer>
+        </form>
       </Modal>
     </div>
   );
