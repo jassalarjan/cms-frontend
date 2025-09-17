@@ -14,6 +14,7 @@ import AdminHome from "./pages/admin/AdminHome";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminComplaints from "./pages/admin/AdminComplaints";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminLocations from "./pages/admin/AdminLocations";
 
 // Supplier Layout and Pages
 import SupplierLayout from "./layouts/SupplierLayout";
@@ -62,6 +63,7 @@ function App() {
           >
             <Route index element={<AdminHome />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="locations" element={<AdminLocations />} />
             <Route path="complaints" element={<AdminComplaints />} />
             <Route path="reports" element={<AdminReports />} />
           </Route>
@@ -76,7 +78,6 @@ function App() {
             }
           >
             <Route index element={<SupplierHome />} />
-            <Route path="create" element={<SupplierCreate />} />
           </Route>
           
           {/* Customer Routes (My Complaints only) */}

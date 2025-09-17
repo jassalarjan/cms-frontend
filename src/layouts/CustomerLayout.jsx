@@ -19,6 +19,7 @@ const CustomerLayout = () => {
   const location = useLocation();
 
   const navigation = [
+    { name: 'New Complaint', href: '/customer/create', icon: PlusCircleIcon },
     { name: 'My Complaints', href: '/customer', icon: ExclamationTriangleIcon },
   ];
 

@@ -8,6 +8,7 @@ import {
   HomeIcon,
   Bars3Icon,
   XMarkIcon,
+  MapPinIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminLayout = () => {
@@ -17,8 +18,9 @@ const AdminLayout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Users', href: '/admin/users', icon: UserGroupIcon },
+    { name: 'Location Management', href: '/admin/locations', icon: MapPinIcon },
     { name: 'Complaints', href: '/admin/complaints', icon: ExclamationTriangleIcon },
-    { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
+    // { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
   ];
 
   return (

@@ -37,13 +37,12 @@ export default function Navbar() {
         ...baseItems,
         { name: "User Management", href: "/admin/users", icon: UserGroupIcon },
         { name: "Complaints", href: "/admin/complaints", icon: ExclamationTriangleIcon },
-        { name: "Reports", href: "/admin/reports", icon: ChartBarIcon },
+        // { name: "Reports", href: "/admin/reports", icon: ChartBarIcon },
       ];
     } else if (user?.role === "SUPPLIER") {
       return [
         ...baseItems,
-        { name: "My Complaints", href: "/supplier", icon: ExclamationTriangleIcon },
-        { name: "Create Complaint", href: "/supplier/create", icon: ExclamationTriangleIcon },
+        { name: "Assigned Complaints", href: "/supplier", icon: ExclamationTriangleIcon },
       ];
     } else if (user?.role === "CUSTOMER") {
       return [
@@ -70,7 +69,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200">
+    <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and Navigation */}
@@ -138,7 +137,7 @@ export default function Navbar() {
                   >
                     <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                       <div className="py-1">
-                      
+                       
                         <Menu.Item>
                           {({ active }) => (
                             <button

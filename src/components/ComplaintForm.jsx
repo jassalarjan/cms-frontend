@@ -15,10 +15,12 @@ export default function ComplaintForm({ supplierId }) {
     category: "PRODUCT_DEFECT",
     priority: "MEDIUM",
     customer_id: user?.id || "",
-    supplier_id: supplierId || "",
+    location_id: "",
     client_name: user?.name || "",
     date_of_manufacture: getToday(),
   });
+  
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     setForm(f => ({
@@ -26,6 +28,22 @@ export default function ComplaintForm({ supplierId }) {
       customer_id: user?.id || "",
       client_name: user?.name || "",
     }));
+    
+    // Fetch locations
+    const fetchLocations = async () => {
+      try {
+        const res = await API.get("/locations");
+        if (res.data.success) {
+          setLocations(res.data.data || []);
+        } else {
+          setLocations([]);
+        }
+      } catch (err) {
+        console.error("Error fetching locations:", err);
+        setLocations([]);
+      }
+    };
+    fetchLocations();
   }, [user]);
 
   const [submittedComplaint, setSubmittedComplaint] = useState(null);
@@ -43,6 +61,7 @@ export default function ComplaintForm({ supplierId }) {
     const payload = {
       ...form,
       customer_id: parseInt(user.id, 10),
+      location_id: parseInt(form.location_id, 10),
       date_of_manufacture: form.date_of_manufacture || getToday(),
     };
     try {
@@ -84,6 +103,21 @@ export default function ComplaintForm({ supplierId }) {
             onChange={handleChange}
             className="w-full border rounded px-3 py-2"
           />
+
+          <select
+            name="location_id"
+            value={form.location_id}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+            required
+          >
+            <option value="">Select Location</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
 
           <input
             name="product_name"
@@ -143,7 +177,7 @@ export default function ComplaintForm({ supplierId }) {
             <option value="HIGH">High</option>
             <option value="CRITICAL">Critical</option>
           </select>
-
+          
           {/* Client name is derived from user, no input needed */}
 
           <input

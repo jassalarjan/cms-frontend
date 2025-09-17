@@ -35,7 +35,8 @@ export default function AdminUsers() {
     role: 'CUSTOMER',
     phone: '',
     address: '',
-    password: ''
+    password: '',
+    location_id: ''
   });
 
   // Memoize form handlers
@@ -171,7 +172,8 @@ export default function AdminUsers() {
         role: 'CUSTOMER',
         phone: '',
         address: '',
-        password: ''
+        password: '',
+        location_id: ''
       });
       toast.success('User added successfully');
     } catch (err) {
@@ -208,7 +210,8 @@ export default function AdminUsers() {
       role: user.role || 'CUSTOMER',
       phone: user.phone || '',
       address: user.address || '',
-      password: ''
+      password: '',
+      location_id: user.location_id || ''
     });
     setShowEditModal(true);
   };

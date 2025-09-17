@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
@@ -10,15 +10,19 @@ import {
   XMarkIcon,
   BellIcon,
   ShoppingBagIcon,
-  UserIcon
+  UserIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const SupplierLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
   const navigation = [
-    { name: 'Complaint Management', href: '/supplier', icon: ExclamationTriangleIcon },
+    { name: 'Dashboard', href: '/supplier', icon: HomeIcon },
   ];
 
   return (
@@ -82,7 +86,7 @@ const SupplierLayout = () => {
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="px-6 pb-4 border-b border-gray-200">
                 <h2 className="text-xl font-bold text-gray-900">Supplier Portal</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage complaints</p>
+                <p className="text-sm text-gray-500 mt-1">Manage complaints for your location</p>
               </div>
               <nav className="mt-6 px-6">
                 <div className="space-y-2">

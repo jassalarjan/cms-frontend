@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -7,6 +7,7 @@ import {
   LockClosedIcon,
   BriefcaseIcon
 } from '@heroicons/react/24/outline';
+import API from '../../api/axios';
 
 // Memoized form input component to prevent focus issues
 export const FormInput = React.memo(({ 
@@ -57,12 +58,73 @@ export const FormInput = React.memo(({
 
 FormInput.displayName = 'FormInput';
 
+// Memoized form select component
+export const FormSelect = React.memo(({
+  field,
+  label,
+  icon: Icon,
+  required = false,
+  value,
+  onChange,
+  options,
+  placeholder = "Select an option"
+}) => {
+  return (
+    <div className="mb-4">
+      <label htmlFor={field} className="block text-sm font-medium text-gray-700 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-gray-400" />
+          </div>
+        )}
+        <select
+          id={field}
+          name={field}
+          value={value || ''}
+          onChange={(e) => onChange(field, e.target.value)}
+          className={`input-field ${Icon ? 'pl-10' : ''}`}
+          required={required}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+});
+
+FormSelect.displayName = 'FormSelect';
+
 // Memoized user form component
 export const UserForm = React.memo(({ 
   formData, 
   onFormChange, 
   isEdit = false 
 }) => {
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await API.get('/locations');
+        setLocations(response.data.data);
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+      }
+    };
+
+    if (formData.role === 'SUPPLIER') {
+      fetchLocations();
+    }
+  }, [formData.role]);
+
   const handleChange = useCallback((field, value) => {
     onFormChange(field, value);
   }, [onFormChange]);
@@ -123,6 +185,24 @@ export const UserForm = React.memo(({
           value={formData.phone}
           onChange={handleChange}
         />
+
+        {formData.role === 'SUPPLIER' && (
+          <div className="md:col-span-2">
+            <FormSelect
+              field="location_id"
+              label="Location"
+              icon={MapPinIcon}
+              required
+              value={formData.location_id}
+              onChange={handleChange}
+              options={locations.map(location => ({
+                value: location.id,
+                label: location.name
+              }))}
+              placeholder="Select a location"
+            />
+          </div>
+        )}
 
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
