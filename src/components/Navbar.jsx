@@ -37,7 +37,7 @@ export default function Navbar() {
         ...baseItems,
         { name: "User Management", href: "/admin/users", icon: UserGroupIcon },
         { name: "Complaints", href: "/admin/complaints", icon: ExclamationTriangleIcon },
-        // { name: "Reports", href: "/admin/reports", icon: ChartBarIcon },
+        { name: "Reports", href: "/admin/reports", icon: ChartBarIcon },
       ];
     } else if (user?.role === "SUPPLIER") {
       return [
@@ -75,8 +75,12 @@ export default function Navbar() {
           {/* Logo and Navigation */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-sm">CMS</span>
+              <div className="w-12 mr-3">
+                <img
+                  src="/logo1.png"
+                  alt="CMS Logo"
+                  className="w-12 h-auto object-contain"
+                />
               </div>
               <h1 className="text-xl font-bold text-gray-900">Complaint Management</h1>
             </div>

@@ -78,8 +78,12 @@ export default function Login() {
         {/* Logo & Brand */}
         <div className="relative z-10">
           <div className="flex items-center mb-6">
-            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center mr-4 shadow-2xl">
-              <span className="text-blue-600 font-bold text-xl">CMS</span>
+            <div className="w-16 mr-4 shadow-2xl">
+              <img
+                src="/logo.png"
+                alt="CMS Logo"
+                className="w-16 h-auto object-contain"
+              />
             </div>
             <div>
               <h1 className="text-white text-2xl font-bold">Complaint Manager</h1>
@@ -123,8 +127,12 @@ export default function Login() {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-              <span className="text-white font-bold text-2xl">CMS</span>
+            <div className="w-20 mx-auto mb-4 shadow-xl">
+              <img
+                src="/logo1.png"
+                alt="CMS Logo"
+                className="w-20 h-auto object-contain"
+              />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Complaint Manager</h2>
           </div>

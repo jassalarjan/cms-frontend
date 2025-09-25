@@ -124,4 +124,38 @@ body {
   .focus-ring {
     @apply focus:ring-4 focus:ring-blue-100 focus:outline-none;
   }
+
+  /* PDF Viewer Styles */
+  .pdf-viewer {
+    @apply bg-white rounded-lg shadow-xl;
+  }
+
+  .pdf-viewer-toolbar {
+    @apply bg-gray-50 border-b border-gray-200 px-4 py-3;
+  }
+
+  .pdf-viewer-content {
+    @apply bg-gray-100 p-4 overflow-auto;
+  }
+
+  .pdf-page {
+    @apply shadow-lg bg-white mx-auto;
+  }
+
+  /* React PDF overrides */
+  .react-pdf__Document {
+    @apply flex justify-center;
+  }
+
+  .react-pdf__Page {
+    @apply max-w-full;
+  }
+
+  .react-pdf__Page__canvas {
+    @apply shadow-lg rounded;
+  }
+
+  .react-pdf__Page__textContent {
+    @apply hidden;
+  }
 }

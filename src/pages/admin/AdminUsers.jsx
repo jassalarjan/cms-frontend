@@ -36,7 +36,7 @@ export default function AdminUsers() {
     phone: '',
     address: '',
     password: '',
-    location_id: ''
+    location_ids: []
   });
 
   // Memoize form handlers
@@ -162,6 +162,10 @@ export default function AdminUsers() {
       toast.error('Password must be at least 6 characters long');
       return;
     }
+    if (formData.role === 'SUPPLIER' && (!formData.location_ids || formData.location_ids.length === 0)) {
+      toast.error('At least one location is required for suppliers');
+      return;
+    }
     try {
       const res = await API.post('/admin/users', formData);
       setUsers([...users, res.data.data]);
@@ -173,7 +177,7 @@ export default function AdminUsers() {
         phone: '',
         address: '',
         password: '',
-        location_id: ''
+        location_ids: []
       });
       toast.success('User added successfully');
     } catch (err) {
@@ -190,7 +194,28 @@ export default function AdminUsers() {
       if (!updateData.password) {
         delete updateData.password;
       }
-      
+
+      // Ensure location_ids is properly formatted as array of integers
+      if (updateData.location_ids) {
+        updateData.location_ids = updateData.location_ids.map(id => parseInt(id));
+      }
+
+      // Validate supplier locations
+      if (selectedUser.role === 'SUPPLIER' && (!updateData.location_ids || updateData.location_ids.length === 0)) {
+        toast.error('At least one location is required for suppliers');
+        return;
+      }
+
+      console.log('Sending update data:', updateData); // Debug log
+      console.log('Update data types:', {
+        name: typeof updateData.name,
+        email: typeof updateData.email,
+        phone: typeof updateData.phone,
+        company: typeof updateData.company,
+        location_ids: typeof updateData.location_ids,
+        location_ids_array: Array.isArray(updateData.location_ids),
+        location_ids_length: updateData.location_ids?.length
+      });
       const res = await API.patch(`/admin/users/${selectedUser.user_id}`, updateData);
       setUsers(users.map(u => u.user_id === selectedUser.user_id ? res.data.data : u));
       setShowEditModal(false);
@@ -198,11 +223,31 @@ export default function AdminUsers() {
       toast.success('User updated successfully');
     } catch (err) {
       console.error('Error updating user:', err);
-      toast.error('Failed to update user');
+      console.error('Full error object:', err);
+      console.error('Error response data:', err.response?.data);
+      console.error('Error response status:', err.response?.status);
+
+      // Handle different error response formats
+      let errorMessage = 'Failed to update user';
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.errors) {
+          console.log('Validation errors:', err.response.data.errors);
+          errorMessage = Object.values(err.response.data.errors).join(', ');
+        }
+      }
+
+      toast.error(errorMessage);
     }
   };
 
   const openEditModal = (user) => {
+    console.log('Opening edit modal for user:', user);
+    console.log('User location_ids:', user.location_ids, typeof user.location_ids);
+
     setSelectedUser(user);
     setFormData({
       name: user.name || '',
@@ -211,7 +256,7 @@ export default function AdminUsers() {
       phone: user.phone || '',
       address: user.address || '',
       password: '',
-      location_id: user.location_id || ''
+      location_ids: user.location_ids ? user.location_ids.split(',').map(id => parseInt(id.trim())) : []
     });
     setShowEditModal(true);
   };
@@ -255,9 +300,28 @@ export default function AdminUsers() {
       )
     },
     {
-      key: 'phone',
-      title: 'Phone',
-      render: (value) => value || 'N/A'
+      key: 'location_names',
+      title: 'Locations',
+      render: (value, item) => {
+        if (!value && !item.location_ids) return 'No locations';
+        const locations = value ? value.split(',').map(name => name.trim()) : [];
+        if (locations.length === 0) return 'No locations';
+        if (locations.length === 1) return locations[0];
+        return (
+          <div className="flex flex-wrap gap-1">
+            {locations.slice(0, 2).map((location, index) => (
+              <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                {location}
+              </span>
+            ))}
+            {locations.length > 2 && (
+              <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                +{locations.length - 2} more
+              </span>
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'created_at',
@@ -530,6 +594,20 @@ export default function AdminUsers() {
                 <p className="text-gray-900">{selectedUser.address}</p>
               </div>
             )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Locations</label>
+              <div className="flex flex-wrap gap-2">
+                {selectedUser.location_names ? (
+                  selectedUser.location_names.split(',').map((location, index) => (
+                    <span key={index} className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                      {location.trim()}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-gray-500">No locations assigned</span>
+                )}
+              </div>
+            </div>
           </div>
         )}
         <Modal.Footer>

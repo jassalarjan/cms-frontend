@@ -1,13 +1,15 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { 
-  DocumentIcon, 
-  PhotoIcon, 
-  XMarkIcon, 
+import {
+  DocumentIcon,
+  PhotoIcon,
+  XMarkIcon,
   CloudArrowUpIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import PDFViewer from './PDFViewer';
 
 const FileUpload = ({ 
   onFilesChange, 
@@ -20,6 +22,7 @@ const FileUpload = ({
   const [files, setFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewingPDF, setViewingPDF] = useState(null);
   const fileInputRef = useRef(null);
 
   const validateFile = (file) => {
@@ -162,6 +165,14 @@ const FileUpload = ({
     onFilesChange([]);
   };
 
+  const viewPDF = (fileObj) => {
+    setViewingPDF(fileObj.file);
+  };
+
+  const closePDFViewer = () => {
+    setViewingPDF(null);
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Upload Area */}
@@ -295,7 +306,16 @@ const FileUpload = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex items-center space-x-2">
+                    {fileObj.type === 'application/pdf' && (
+                      <button
+                        onClick={() => viewPDF(fileObj)}
+                        className="p-2 text-blue-600 hover:text-blue-800 transition-colors rounded-full hover:bg-blue-50"
+                        title="View PDF"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => removeFile(fileObj.id)}
                       className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
@@ -322,6 +342,14 @@ const FileUpload = ({
             <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: '45%' }}></div>
           </div>
         </div>
+      )}
+
+      {/* PDF Viewer */}
+      {viewingPDF && (
+        <PDFViewer
+          file={viewingPDF}
+          onClose={closePDFViewer}
+        />
       )}
     </div>
   );
