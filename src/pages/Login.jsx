@@ -127,7 +127,7 @@ export default function Login() {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="w-20 mx-auto mb-4 shadow-xl">
+            <div className="w-24 mx-auto mb-4 shadow-xl">
               <img
                 src="/logo1.png"
                 alt="CMS Logo"
