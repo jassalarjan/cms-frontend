@@ -1,8 +1,9 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { EyeIcon, EyeSlashIcon, UserIcon, LockClosedIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon, UserIcon, LockClosedIcon, ExclamationCircleIcon, ArrowPathIcon, QuestionMarkCircleIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
+import API from "../api/axios";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -12,7 +13,9 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -36,13 +39,14 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error("Please fix the errors below");
       return;
     }
-    
+
     setLoading(true);
+    setShowVerificationPrompt(false);
     try {
       await login(formData.email, formData.password);
       toast.success("Login successful!");
@@ -50,9 +54,34 @@ export default function Login() {
     } catch (err) {
       console.error("Login error:", err);
       const errorMessage = err.response?.data?.message || err.response?.data?.error || "Login failed. Please try again.";
-      toast.error(errorMessage);
+
+      if (err.response?.data?.requiresVerification) {
+        setShowVerificationPrompt(true);
+        toast.error("Please verify your email address before logging in.");
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!formData.email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      await API.post("/auth/resend-verification", { email: formData.email });
+      toast.success("Verification email sent! Please check your inbox.");
+    } catch (err) {
+      console.error("Resend error:", err);
+      const errorMessage = err.response?.data?.message || "Failed to resend verification email. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -224,9 +253,22 @@ export default function Login() {
                   <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2" />
                   <span className="ml-2 text-sm text-gray-600">Remember me</span>
                 </label>
-                <a href="#" className="text-sm text-blue-600 hover:text-blue-500 font-medium transition-colors">
-                  Forgot password?
-                </a>
+                <div className="flex items-center space-x-4">
+                  <a href="#" className="text-sm text-blue-600 hover:text-blue-500 font-medium transition-colors">
+                    Forgot password?
+                  </a>
+                  <div className="flex items-center space-x-2">
+                    <Link to="/user-guide" className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors flex items-center">
+                      <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
+                      Help
+                    </Link>
+                    <span className="text-gray-400">•</span>
+                    <Link to="/flowchart" className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors flex items-center">
+                      <ChartBarIcon className="h-4 w-4 mr-1" />
+                      Flowchart
+                    </Link>
+                  </div>
+                </div>
               </div>
 
               {/* Login Button */}
@@ -252,6 +294,50 @@ export default function Login() {
                 )}
               </button>
             </form>
+
+            {/* Email Verification Prompt */}
+            {showVerificationPrompt && (
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                <div className="flex">
+                  <ExclamationCircleIcon className="h-5 w-5 text-yellow-400" />
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Email Verification Required
+                    </h3>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      <p>
+                        Please verify your email address before logging in. Check your inbox for a verification email.
+                      </p>
+                    </div>
+                    <div className="mt-4">
+                      <div className="-mx-2 -my-1.5 flex">
+                        <button
+                          type="button"
+                          onClick={handleResendVerification}
+                          disabled={resendLoading}
+                          className="bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600 disabled:opacity-50"
+                        >
+                          {resendLoading ? (
+                            <div className="flex items-center">
+                              <ArrowPathIcon className="h-4 w-4 animate-spin mr-1" />
+                              Sending...
+                            </div>
+                          ) : (
+                            'Resend Verification Email'
+                          )}
+                        </button>
+                        <Link
+                          to="/verify-email"
+                          className="ml-3 bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600"
+                        >
+                          Enter Verification Code
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Divider */}
             <div className="relative my-6">

@@ -7,6 +7,8 @@ import { Toaster } from "react-hot-toast";
 // Auth pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import UserGuide from "./pages/UserGuide";
+import FlowchartPage from "./pages/FlowchartPage";
 
 // Admin Layout and Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -51,6 +53,8 @@ function App() {
           <Route path="/status" element={<StatusPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/user-guide" element={<UserGuide />} />
+          <Route path="/flowchart" element={<FlowchartPage />} />
           
           {/* Admin Routes */}
           <Route

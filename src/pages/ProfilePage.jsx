@@ -81,10 +81,10 @@ export default function ProfilePage() {
   const fetchUserSettings = async () => {
     try {
       const [notificationsRes, securityRes] = await Promise.all([
-        API.get('/user/notifications'),
-        API.get('/user/security-settings')
+        API.get('/api/users/notifications'),
+        API.get('/api/users/security-settings')
       ]);
-      
+
       setNotifications(notificationsRes.data || notifications);
       setSecuritySettings(securityRes.data || securitySettings);
     } catch (error) {
@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
   const fetchActivityLogs = async () => {
     try {
-      const res = await API.get('/user/activity-logs');
+      const res = await API.get('/api/users/activity-logs');
       setActivityLogs(res.data || []);
     } catch (error) {
       console.error('Error fetching activity logs:', error);
@@ -113,7 +113,7 @@ export default function ProfilePage() {
         }
       });
 
-      const res = await API.patch('/user/profile', formData, {
+      const res = await API.patch('/api/users/profile', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -145,10 +145,10 @@ export default function ProfilePage() {
     setLoading(true);
     
     try {
-      await API.patch('/user/password', {
-        current_password: passwordData.current_password,
-        new_password: passwordData.new_password
-      });
+       await API.patch('/api/users/password', {
+         current_password: passwordData.current_password,
+         new_password: passwordData.new_password
+       });
       
       toast.success('Password updated successfully');
       setShowPasswordModal(false);
@@ -168,7 +168,7 @@ export default function ProfilePage() {
   const handleNotificationUpdate = async (key, value) => {
     try {
       const updatedNotifications = { ...notifications, [key]: value };
-      await API.patch('/user/notifications', updatedNotifications);
+      await API.patch('/api/users/notifications', updatedNotifications);
       setNotifications(updatedNotifications);
       toast.success('Notification settings updated');
     } catch (error) {
@@ -180,7 +180,7 @@ export default function ProfilePage() {
   const handleSecurityUpdate = async (key, value) => {
     try {
       const updatedSecurity = { ...securitySettings, [key]: value };
-      await API.patch('/user/security-settings', updatedSecurity);
+      await API.patch('/api/users/security-settings', updatedSecurity);
       setSecuritySettings(updatedSecurity);
       toast.success('Security settings updated');
     } catch (error) {
@@ -202,7 +202,7 @@ export default function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     try {
-      await API.delete('/user/account');
+      await API.delete('/api/users/account');
       toast.success('Account deleted successfully');
       // Redirect to login or home page
       window.location.href = '/login';
