@@ -42,7 +42,7 @@ export const FormInput = React.memo(({
           name={field}
           type={type}
           placeholder={placeholder}
-          className={`input-field ${Icon ? 'pl-10' : ''} ${error ? 'border-red-500' : ''}`}
+          className={`w-full px-4 py-3 ${Icon ? 'pl-12' : 'pl-4'} border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 ${error ? 'border-red-500' : ''}`}
           value={value}
           onChange={handleChange}
           required={required}
@@ -85,7 +85,7 @@ export const FormSelect = React.memo(({
           name={field}
           value={value || ''}
           onChange={(e) => onChange(field, e.target.value)}
-          className={`input-field ${Icon ? 'pl-10' : ''}`}
+          className={`w-full px-4 py-3 ${Icon ? 'pl-12' : 'pl-4'} border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900`}
           required={required}
         >
           <option value="">{placeholder}</option>
@@ -134,8 +134,8 @@ export const UserForm = React.memo(({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormInput
           field="name"
-          label="Name"
-          placeholder="Enter full name"
+          label="Full Name"
+          placeholder="Enter full name..."
           icon={UserIcon}
           required
           value={formData.name}
@@ -144,9 +144,9 @@ export const UserForm = React.memo(({
 
         <FormInput
           field="email"
-          label="Email"
+          label="Email Address"
           type="email"
-          placeholder="Enter email address"
+          placeholder="Enter email address..."
           icon={EnvelopeIcon}
           required
           value={formData.email}
@@ -166,11 +166,11 @@ export const UserForm = React.memo(({
               name="role"
               value={formData.role}
               onChange={(e) => handleChange('role', e.target.value)}
-              className="input-field pl-10"
+              className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900"
               required
             >
-              <option value="CUSTOMER">Customer</option>
-              <option value="SUPPLIER">Supplier</option>
+              <option value="CUSTOMER">System Integrator</option>
+              <option value="SUPPLIER">Bank Official</option>
               <option value="ADMIN">Admin</option>
             </select>
           </div>
@@ -178,9 +178,9 @@ export const UserForm = React.memo(({
 
         <FormInput
           field="phone"
-          label="Phone"
+          label="Phone Number"
           type="tel"
-          placeholder="Enter phone number"
+          placeholder="Enter phone number..."
           icon={PhoneIcon}
           value={formData.phone}
           onChange={handleChange}
@@ -278,7 +278,7 @@ export const UserForm = React.memo(({
 
             {(!formData.location_ids || formData.location_ids.length === 0) && (
               <p className="mt-2 text-sm text-red-600">
-                At least one location must be selected for suppliers
+                At least one location must be selected for bank officials
               </p>
             )}
           </div>
@@ -296,9 +296,9 @@ export const UserForm = React.memo(({
               name="address"
               value={formData.address}
               onChange={(e) => handleChange('address', e.target.value)}
-              className="input-field pl-10"
+              className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 resize-none"
               rows={3}
-              placeholder="Enter address"
+              placeholder="Enter full address..."
             />
           </div>
         </div>
@@ -308,7 +308,7 @@ export const UserForm = React.memo(({
             field="password"
             label={isEdit ? "Password (leave blank to keep current)" : "Password"}
             type="password"
-            placeholder={isEdit ? "Enter new password" : "Enter password"}
+            placeholder={isEdit ? "Enter new password..." : "Enter password..."}
             icon={LockClosedIcon}
             required={!isEdit}
             value={formData.password}

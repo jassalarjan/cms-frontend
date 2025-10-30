@@ -50,13 +50,13 @@ export default function FlowchartPage() {
             <h3 className="text-lg font-semibold text-blue-900 mb-4">Understanding the Flow</h3>
             <div className="space-y-3 text-blue-800">
               <p>
-                <strong>Customer Journey:</strong> Starts with complaint creation and ends with resolution tracking.
+                <strong>System Integrator Journey:</strong> Starts with complaint creation and ends with resolution tracking.
               </p>
               <p>
                 <strong>Admin Role:</strong> Central to the process - reviews, assigns, and manages resolution.
               </p>
               <p>
-                <strong>Supplier Role:</strong> Location-based monitoring with read-only access to complaints.
+                <strong>Bank Official Role:</strong> Location-based monitoring with read-only access to complaints.
               </p>
             </div>
           </div>

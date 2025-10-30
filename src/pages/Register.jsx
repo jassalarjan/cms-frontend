@@ -149,8 +149,8 @@ export default function Register() {
     try {
       const { confirmPassword, ...submitData } = formData;
       await API.post("/auth/register", submitData);
-      toast.success("Registration successful! Please check your email to verify your account.");
-      setTimeout(() => navigate("/verify-email"), 2000);
+      toast.success("Registration successful! Your account is pending approval.");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       console.error('Registration error:', err);
       const errorMessage = err.response?.data?.error || "Registration failed. Please try again.";
@@ -313,30 +313,30 @@ export default function Register() {
                     <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Select Your Role <span className="text-red-500">*</span>
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <button
                         type="button"
-                        className={`p-4 border rounded-lg flex flex-col items-center justify-center transition-all h-20 ${
+                        className={`p-3 sm:p-4 border rounded-lg flex flex-col items-center justify-center transition-all h-16 sm:h-20 ${
                           formData.role === 'CUSTOMER'
                             ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
                             : 'border-gray-200 hover:border-blue-500 hover:bg-blue-50'
                         }`}
                         onClick={() => handleInputChange('role', 'CUSTOMER')}
                       >
-                        <UserIcon className="h-6 w-6 mb-2" />
-                        <span className="font-medium">Customer</span>
+                        <UserIcon className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
+                        <span className="font-medium text-sm sm:text-base">System Integrator</span>
                       </button>
                       <button
                         type="button"
-                        className={`p-4 border rounded-lg flex flex-col items-center justify-center transition-all h-20 ${
+                        className={`p-3 sm:p-4 border rounded-lg flex flex-col items-center justify-center transition-all h-16 sm:h-20 ${
                           formData.role === 'SUPPLIER'
                             ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
                             : 'border-gray-200 hover:border-blue-500 hover:bg-blue-50'
                         }`}
                         onClick={() => handleInputChange('role', 'SUPPLIER')}
                       >
-                        <BriefcaseIcon className="h-6 w-6 mb-2" />
-                        <span className="font-medium">Supplier</span>
+                        <BriefcaseIcon className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
+                        <span className="font-medium text-sm sm:text-base">Bank Official</span>
                       </button>
                     </div>
                     {errors.role && (

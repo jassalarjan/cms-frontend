@@ -22,10 +22,6 @@ const AdminReports = () => {
         api.get("/reports/by-status"),
       ]);
 
-      console.log('Stats response:', statsRes.data);
-      console.log('Monthly response:', monthlyRes.data);
-      console.log('Daily response:', dailyRes.data);
-      console.log('Status response:', statusRes.data);
 
       setStats(statsRes.data);
       setMonthly(monthlyRes.data);

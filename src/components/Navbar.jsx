@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext, ThemeContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Bars3Icon,
@@ -10,6 +10,8 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   ExclamationTriangleIcon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -17,6 +19,7 @@ import toast from "react-hot-toast";
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,20 +72,20 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-white dark:bg-gray-900 shadow-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and Navigation */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <div className="w-12 mr-3">
+              <div className="w-8 sm:w-12 mr-2 sm:mr-3">
                 <img
                   src="/logo1.png"
                   alt="CMS Logo"
-                  className="w-12 h-auto object-contain"
+                  className="w-8 h-8 sm:w-12 sm:h-12 object-contain"
                 />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Complaint Management</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">Complaint Management</h1>
             </div>
 
             {/* Desktop Navigation */}
@@ -124,8 +127,8 @@ export default function Navbar() {
                       <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                         <UserCircleIcon className="h-8 w-8 text-gray-400" />
                         <div className="text-left">
-                          <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-300">{user.email}</p>
                         </div>
                       </div>
                     </Menu.Button>
@@ -141,7 +144,17 @@ export default function Navbar() {
                   >
                     <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                       <div className="py-1">
-                       
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={toggleTheme}
+                              className={`${active ? "bg-gray-100" : ""} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                            >
+                              {theme === 'light' ? <MoonIcon className="h-4 w-4 mr-3" /> : <SunIcon className="h-4 w-4 mr-3" />}
+                              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                            </button>
+                          )}
+                        </Menu.Item>
                         <Menu.Item>
                           {({ active }) => (
                             <button
@@ -204,18 +217,26 @@ export default function Navbar() {
             })}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-4">
-              <UserCircleIcon className="h-10 w-10 text-gray-400" />
-              <div className="ml-3">
-                <div className="text-base font-medium text-gray-800">{user.name}</div>
-                <div className="text-sm font-medium text-gray-500">{user.email}</div>
+            <div className="flex items-center justify-between px-4 mb-3">
+              <div className="flex items-center">
+                <UserCircleIcon className="h-10 w-10 text-gray-400" />
+                <div className="ml-3">
+                  <div className="text-base font-medium text-gray-800 dark:text-white">{user.name}</div>
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-300">{user.email}</div>
+                </div>
               </div>
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}>
+                {user.role}
+              </span>
             </div>
             <div className="mt-3 space-y-1">
-              {user?.role === 'ADMIN' && (
-                <>
-                </>
-              )}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center w-full px-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                {theme === 'light' ? <MoonIcon className="h-5 w-5 mr-3" /> : <SunIcon className="h-5 w-5 mr-3" />}
+                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+              </button>
               <button
                 onClick={handleLogout}
                 className="flex items-center w-full px-4 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-red-50"

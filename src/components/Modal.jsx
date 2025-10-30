@@ -13,11 +13,11 @@ const Modal = ({
   className = ''
 }) => {
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-7xl'
+    sm: 'max-w-sm sm:max-w-md',
+    md: 'max-w-md sm:max-w-lg',
+    lg: 'max-w-lg sm:max-w-2xl',
+    xl: 'max-w-xl sm:max-w-4xl',
+    full: 'max-w-6xl sm:max-w-7xl'
   };
 
   useEffect(() => {

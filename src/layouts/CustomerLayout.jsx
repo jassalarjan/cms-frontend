@@ -11,11 +11,14 @@ import {
   XMarkIcon,
   BellIcon,
   UserIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 
 const CustomerLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
 
   const navigation = [
@@ -79,60 +82,74 @@ const CustomerLayout = () => {
         </div>
 
         {/* Desktop sidebar */}
-        <div className="hidden lg:flex lg:flex-shrink-0">
-          <div className="flex flex-col w-72 border-r border-gray-200 bg-white">
+        <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-72'}`}>
+          <div className="flex flex-col w-full border-r border-gray-200 bg-white">
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <div className="px-6 pb-4 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Customer Portal</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage your complaints and requests</p>
+              <div className={`px-6 pb-4 border-b border-gray-200 ${sidebarCollapsed ? 'px-3' : ''}`}>
+                <div className="flex items-center justify-between">
+                  {!sidebarCollapsed && (
+                    <>
+                      <h2 className="text-xl font-bold text-gray-900">Customer Portal</h2>
+                      <p className="text-sm text-gray-600 mt-1">Manage your complaints and requests</p>
+                    </>
+                  )}
+                  <button
+                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                    title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                  >
+                    {sidebarCollapsed ? <ChevronRightIcon className="h-5 w-5" /> : <ChevronLeftIcon className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
-              <nav className="mt-6 px-6">
+              <nav className={`mt-6 ${sidebarCollapsed ? 'px-3' : 'px-6'}`}>
                 <div className="space-y-2">
                   {navigation.map((item) => (
                     <NavLink
                       key={item.name}
                       to={item.href}
                       className={({ isActive }) =>
-                        `group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                        `group flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                           isActive
                             ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500 shadow-sm'
                             : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm'
                         }`
                       }
+                      title={sidebarCollapsed ? item.name : ''}
                     >
-                      <item.icon 
-                        className={`mr-4 h-5 w-5 flex-shrink-0 transition-colors ${
+                      <item.icon
+                        className={`h-5 w-5 flex-shrink-0 transition-colors ${
                           location.pathname === item.href ? 'text-blue-500' : 'text-gray-400'
-                        }`} 
+                        } ${sidebarCollapsed ? '' : 'mr-4'}`}
                       />
-                      {item.name}
+                      {!sidebarCollapsed && item.name}
                     </NavLink>
                   ))}
                 </div>
               </nav>
 
-            
-
-              {/* Status Summary */}
-              <div className="mt-6 px-6">
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-100">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Your Status</h4>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Open Complaints</span>
-                      <span className="font-semibold text-orange-600">2</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Resolved</span>
-                      <span className="font-semibold text-green-600">8</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Response Rate</span>
-                      <span className="font-semibold text-blue-600">98%</span>
+              {!sidebarCollapsed && (
+                /* Status Summary */
+                <div className="mt-6 px-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-100">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Your Status</h4>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Open Complaints</span>
+                        <span className="font-semibold text-orange-600">2</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Resolved</span>
+                        <span className="font-semibold text-green-600">8</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Response Rate</span>
+                        <span className="font-semibold text-blue-600">98%</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

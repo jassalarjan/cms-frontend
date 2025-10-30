@@ -163,7 +163,7 @@ export default function AdminUsers() {
       return;
     }
     if (formData.role === 'SUPPLIER' && (!formData.location_ids || formData.location_ids.length === 0)) {
-      toast.error('At least one location is required for suppliers');
+      toast.error('At least one location is required for bank officials');
       return;
     }
     try {
@@ -202,20 +202,10 @@ export default function AdminUsers() {
 
       // Validate supplier locations
       if (selectedUser.role === 'SUPPLIER' && (!updateData.location_ids || updateData.location_ids.length === 0)) {
-        toast.error('At least one location is required for suppliers');
+        toast.error('At least one location is required for bank officials');
         return;
       }
 
-      console.log('Sending update data:', updateData); // Debug log
-      console.log('Update data types:', {
-        name: typeof updateData.name,
-        email: typeof updateData.email,
-        phone: typeof updateData.phone,
-        company: typeof updateData.company,
-        location_ids: typeof updateData.location_ids,
-        location_ids_array: Array.isArray(updateData.location_ids),
-        location_ids_length: updateData.location_ids?.length
-      });
       const res = await API.patch(`/admin/users/${selectedUser.user_id}`, updateData);
       setUsers(users.map(u => u.user_id === selectedUser.user_id ? res.data.data : u));
       setShowEditModal(false);
@@ -235,7 +225,6 @@ export default function AdminUsers() {
         } else if (err.response.data.message) {
           errorMessage = err.response.data.message;
         } else if (err.response.data.errors) {
-          console.log('Validation errors:', err.response.data.errors);
           errorMessage = Object.values(err.response.data.errors).join(', ');
         }
       }
@@ -245,8 +234,6 @@ export default function AdminUsers() {
   };
 
   const openEditModal = (user) => {
-    console.log('Opening edit modal for user:', user);
-    console.log('User location_ids:', user.location_ids, typeof user.location_ids);
 
     setSelectedUser(user);
     setFormData({
@@ -280,15 +267,19 @@ export default function AdminUsers() {
     {
       key: 'role',
       title: 'Role',
-      render: (value) => (
-        <span className={`status-badge ${
-          value === 'ADMIN' ? 'bg-purple-100 text-purple-800 border-purple-200' :
-          value === 'SUPPLIER' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-          'bg-green-100 text-green-800 border-green-200'
-        }`}>
-          {value}
-        </span>
-      )
+      render: (value) => {
+        const displayName = value === 'CUSTOMER' ? 'System Integrator' :
+                          value === 'SUPPLIER' ? 'Bank Official' : value;
+        return (
+          <span className={`status-badge ${
+            value === 'ADMIN' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+            value === 'SUPPLIER' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+            'bg-green-100 text-green-800 border-green-200'
+          }`}>
+            {displayName}
+          </span>
+        );
+      }
     },
     {
       key: 'status',
@@ -332,27 +323,27 @@ export default function AdminUsers() {
       key: 'actions',
       title: 'Actions',
       render: (_, item) => (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <button
             onClick={(e) => {
               e.stopPropagation();
               setSelectedUser(item);
               setShowUserModal(true);
             }}
-            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             title="View Details"
           >
-            <EyeIcon className="h-4 w-4" />
+            <EyeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               openEditModal(item);
             }}
-            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
             title="Edit User"
           >
-            <PencilIcon className="h-4 w-4" />
+            <PencilIcon className="h-3 w-3 sm:h-4 sm:w-4" />
           </button>
           {item.status === 'PENDING' && (
             <>
@@ -361,20 +352,20 @@ export default function AdminUsers() {
                   e.stopPropagation();
                   approveUser(item.user_id);
                 }}
-                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                 title="Approve"
               >
-                <CheckCircleIcon className="h-4 w-4" />
+                <CheckCircleIcon className="h-3 w-3 sm:h-4 sm:w-4" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   rejectUser(item.user_id);
                 }}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 title="Reject"
               >
-                <XCircleIcon className="h-4 w-4" />
+                <XCircleIcon className="h-3 w-3 sm:h-4 sm:w-4" />
               </button>
             </>
           )}
@@ -384,9 +375,9 @@ export default function AdminUsers() {
                 e.stopPropagation();
                 toggleStatus(item.user_id, item.status);
               }}
-              className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${
-                item.status === 'ACTIVE' 
-                  ? 'bg-red-100 text-red-800 hover:bg-red-200' 
+              className={`px-2 py-1 text-xs rounded-lg font-medium transition-colors ${
+                item.status === 'ACTIVE'
+                  ? 'bg-red-100 text-red-800 hover:bg-red-200'
                   : 'bg-green-100 text-green-800 hover:bg-green-200'
               }`}
             >
@@ -398,10 +389,10 @@ export default function AdminUsers() {
               e.stopPropagation();
               deleteUser(item.user_id);
             }}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Delete User"
           >
-            <TrashIcon className="h-4 w-4" />
+            <TrashIcon className="h-3 w-3 sm:h-4 sm:w-4" />
           </button>
         </div>
       )
@@ -419,22 +410,23 @@ export default function AdminUsers() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <UserGroupIcon className="h-8 w-8 mr-3 text-blue-600" />
-            User Management
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center">
+            <UserGroupIcon className="h-6 w-6 sm:h-8 sm:w-8 mr-2 sm:mr-3 text-blue-600" />
+            <span className="truncate">User Management</span>
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">
             Manage users, approve registrations, and control access permissions
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary"
+          className="btn-primary flex-shrink-0"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
-          Add User
+          <span className="hidden sm:inline">Add User</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
@@ -523,8 +515,8 @@ export default function AdminUsers() {
             >
               <option value="ALL">All Roles</option>
               <option value="ADMIN">Admin</option>
-              <option value="SUPPLIER">Supplier</option>
-              <option value="CUSTOMER">Customer</option>
+              <option value="SUPPLIER">Bank Official</option>
+              <option value="CUSTOMER">System Integrator</option>
             </select>
           </div>
         </div>
@@ -568,7 +560,8 @@ export default function AdminUsers() {
                   selectedUser.role === 'SUPPLIER' ? 'bg-blue-100 text-blue-800' :
                   'bg-green-100 text-green-800'
                 }`}>
-                  {selectedUser.role}
+                  {selectedUser.role === 'CUSTOMER' ? 'System Integrator' :
+                   selectedUser.role === 'SUPPLIER' ? 'Bank Official' : selectedUser.role}
                 </span>
               </div>
               <div>

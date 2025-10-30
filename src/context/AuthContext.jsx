@@ -21,9 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log("Attempting login for:", email);
       const { data } = await API.post("/auth/login", { email, password });
-      console.log("Login response:", data);
       
       // The backend returns: { message, token, user: { id, name, email, role } }
       const userData = {
@@ -36,7 +34,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
-      console.log("Login successful, user set:", userData);
     } catch (error) {
       console.error("Login error:", error);
       console.error("Error response:", error.response?.data);
@@ -60,5 +57,27 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
+  );
+};
+
+// Theme Context for Dark/Light Mode
+export const ThemeContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
   );
 };

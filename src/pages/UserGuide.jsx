@@ -226,7 +226,7 @@ export default function UserGuide() {
                   <div className="border border-green-200 rounded-lg p-6 bg-green-50">
                     <div className="flex items-center space-x-3 mb-4">
                       <CogIcon className="h-8 w-8 text-green-600" />
-                      <h3 className="text-xl font-semibold text-green-900">Supplier</h3>
+                      <h3 className="text-xl font-semibold text-green-900">Bank Official</h3>
                     </div>
                     <p className="text-green-800 mb-4">Read-only access to complaints in assigned locations</p>
                     <ul className="space-y-2 text-green-700">
@@ -240,7 +240,7 @@ export default function UserGuide() {
                   <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
                     <div className="flex items-center space-x-3 mb-4">
                       <ClipboardDocumentListIcon className="h-8 w-8 text-purple-600" />
-                      <h3 className="text-xl font-semibold text-purple-900">Customer</h3>
+                      <h3 className="text-xl font-semibold text-purple-900">System Integrator</h3>
                     </div>
                     <p className="text-purple-800 mb-4">Complaint creation and tracking capabilities</p>
                     <ul className="space-y-2 text-purple-700">
@@ -273,7 +273,7 @@ export default function UserGuide() {
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">1</div>
                       <div>
                         <h4 className="font-semibold text-gray-900">Complaint Creation</h4>
-                        <p className="text-gray-700">Customer submits complaint with detailed information, location, and priority level</p>
+                        <p className="text-gray-700">System Integrator submits complaint with detailed information, location, and priority level</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-4">

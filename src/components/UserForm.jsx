@@ -152,8 +152,8 @@ const UserForm = ({ onSubmit, initialData = {}, title = "Add User" }) => {
             className="input-field pl-10"
             required
           >
-            <option value="CUSTOMER">Customer</option>
-            <option value="SUPPLIER">Supplier</option>
+            <option value="CUSTOMER">System Integrator</option>
+            <option value="SUPPLIER">Bank Official</option>
             <option value="ADMIN">Admin</option>
           </select>
         </div>

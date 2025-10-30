@@ -83,10 +83,6 @@ export default function AdminHome() {
         API.get("/reports/by-status"),
       ]);
 
-      console.log('Stats Response:', statsRes.data);
-      console.log('Monthly Response:', monthlyRes.data);
-      console.log('Daily Response:', dailyRes.data);
-      console.log('Status Response:', statusRes.data);
 
       // Format monthly trends
       const formattedTrends = Array.isArray(monthlyRes.data)

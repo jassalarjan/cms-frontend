@@ -4,6 +4,24 @@ import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Loading from "../components/Loading";
 
+const getStatusClass = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'open':
+      return 'status-open';
+    case 'in-progress':
+    case 'in progress':
+      return 'status-in-progress';
+    case 'resolved':
+      return 'status-resolved';
+    case 'closed':
+      return 'status-closed';
+    case 'pending':
+      return 'status-pending';
+    default:
+      return 'status-pending';
+  }
+};
+
 export default function CustomerDashboard() {
   const { user } = useContext(AuthContext);
   const [complaints, setComplaints] = useState([]);
@@ -51,10 +69,10 @@ export default function CustomerDashboard() {
         ) : (
           <ul>
             {complaints.map((c) => (
-              <li key={c.id} className="p-3 mb-2 border rounded">
+              <li key={c.id} className="p-3 mb-2 border rounded bg-white dark:bg-gray-800">
                 <p><strong>Subject:</strong> {c.title}</p>
                 <p><strong>Product:</strong> {c.product_name} ({c.product_model})</p>
-                <p><strong>Status:</strong> {c.status}</p>
+                <p><strong>Status:</strong> <span className={`status-badge ${getStatusClass(c.status)}`}>{c.status}</span></p>
                 <p><strong>Description:</strong> {c.description}</p>
                 <p><strong>Priority:</strong> {c.priority}</p>
                 <p><strong>Created:</strong> {new Date(c.created_at).toLocaleDateString()}</p>

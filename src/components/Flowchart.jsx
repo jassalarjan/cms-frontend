@@ -15,7 +15,7 @@ export default function Flowchart() {
     {
       id: 'start',
       title: 'Complaint Created',
-      description: 'Customer submits new complaint with details',
+      description: 'System Integrator submits new complaint with details',
       role: 'customer',
       x: 50,
       y: 100,
@@ -33,7 +33,7 @@ export default function Flowchart() {
     {
       id: 'assignment',
       title: 'Assign to Supplier',
-      description: 'Admin assigns to appropriate supplier based on location',
+      description: 'Admin assigns to appropriate bank official based on location',
       role: 'admin',
       x: 450,
       y: 100,
@@ -42,7 +42,7 @@ export default function Flowchart() {
     {
       id: 'supplier-monitoring',
       title: 'Supplier Monitoring',
-      description: 'Supplier tracks complaints in assigned locations (Read-only)',
+      description: 'Bank Official tracks complaints in assigned locations (Read-only)',
       role: 'supplier',
       x: 650,
       y: 100,
@@ -60,7 +60,7 @@ export default function Flowchart() {
     {
       id: 'customer-updates',
       title: 'Customer Updates',
-      description: 'Customer receives updates and can track progress',
+      description: 'System Integrator receives updates and can track progress',
       role: 'customer',
       x: 250,
       y: 250,
@@ -125,7 +125,7 @@ export default function Flowchart() {
       <div className="flex justify-center space-x-6 mb-8 p-4 bg-gray-50 rounded-lg">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-          <span className="text-sm font-medium text-blue-800">Customer</span>
+          <span className="text-sm font-medium text-blue-800">System Integrator</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-purple-100 border border-purple-300 rounded"></div>
@@ -133,7 +133,7 @@ export default function Flowchart() {
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-          <span className="text-sm font-medium text-green-800">Supplier</span>
+          <span className="text-sm font-medium text-green-800">Bank Official</span>
         </div>
       </div>
 
@@ -243,7 +243,7 @@ export default function Flowchart() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
             <ClipboardDocumentListIcon className="h-5 w-5 text-blue-600" />
-            <h3 className="font-semibold text-blue-900">Customer Journey</h3>
+            <h3 className="font-semibold text-blue-900">System Integrator Journey</h3>
           </div>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>1. Submit complaint with details</li>
@@ -269,7 +269,7 @@ export default function Flowchart() {
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
             <UserGroupIcon className="h-5 w-5 text-green-600" />
-            <h3 className="font-semibold text-green-900">Supplier Monitoring</h3>
+            <h3 className="font-semibold text-green-900">Bank Official Monitoring</h3>
           </div>
           <ul className="text-sm text-green-800 space-y-1">
             <li>1. Monitor assigned locations</li>

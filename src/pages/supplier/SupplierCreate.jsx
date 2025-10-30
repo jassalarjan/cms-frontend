@@ -3,7 +3,7 @@ import ComplaintForm from '../../components/ComplaintForm';
 
 export default function SupplierCreate() {
   const handleSuccess = (data) => {
-    console.log('Complaint created:', data);
+    // Complaint created successfully
     // Redirect or update list
     window.location.href = '/supplier/home';
   };
