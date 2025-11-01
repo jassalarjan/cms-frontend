@@ -405,62 +405,161 @@ export default function AdminComplaints() {
       >
         {selectedComplaint && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Complaint ID</label>
-                <p className="text-gray-900">#{selectedComplaint.complaint_id}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                <p className="text-gray-900">{selectedComplaint.customer_name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
-                <p className="text-gray-900">{selectedComplaint.product_name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
-                <p className="text-gray-900">{selectedComplaint.supplier_name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <span className={`status-badge ${getStatusColor(selectedComplaint.status)}`}>
-                  {selectedComplaint.status?.replace('_', ' ')}
-                </span>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                <span className={`status-badge ${getPriorityColor(selectedComplaint.priority)}`}>
-                  {selectedComplaint.priority}
-                </span>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <p className="text-gray-900">{selectedComplaint.category || 'General'}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Created</label>
-                <p className="text-gray-900">
-                  {selectedComplaint.created_at ? format(new Date(selectedComplaint.created_at), 'PPP') : 'N/A'}
-                </p>
+            {/* Basic Information */}
+            <div className="bg-blue-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
+                Basic Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Complaint ID</label>
+                  <p className="text-gray-900 dark:text-white font-mono">#{selectedComplaint.complaint_id}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.customer_name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                  <span className={`status-badge ${getStatusColor(selectedComplaint.status)}`}>
+                    {selectedComplaint.status?.replace('_', ' ')}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                  <span className={`status-badge ${getPriorityColor(selectedComplaint.priority)}`}>
+                    {selectedComplaint.priority}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.category || 'General'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Created</label>
+                  <p className="text-gray-900 dark:text-white">
+                    {selectedComplaint.created_at ? format(new Date(selectedComplaint.created_at), 'PPP') : 'N/A'}
+                  </p>
+                </div>
               </div>
             </div>
+
+            {/* Location Information */}
+            <div className="bg-green-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <svg className="h-5 w-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                </svg>
+                Location Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zone ID</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.zone_id || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Circle ID</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.circle_id || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location ID</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.location_id || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Product Information */}
+            <div className="bg-purple-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <svg className="h-5 w-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                Product Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.product_name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Model</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.product_model}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Manufacturing Year</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.manufacturing_year}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Manufacture</label>
+                  <p className="text-gray-900 dark:text-white">
+                    {selectedComplaint.date_of_manufacture ? format(new Date(selectedComplaint.date_of_manufacture), 'PPP') : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Warranty Handler</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.warranty_handler}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.supplier_name || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* System Integrator Information */}
+            <div className="bg-yellow-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <svg className="h-5 w-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                System Integrator Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.system_integrator_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.system_integrator_company || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.system_integrator_phone || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                  <p className="text-gray-900 dark:text-white">{selectedComplaint.system_integrator_email || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Complaint Details */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-              <p className="text-gray-900">{selectedComplaint.subject}</p>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+              <p className="text-gray-900 dark:text-white font-medium">{selectedComplaint.title}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-900 whitespace-pre-wrap">{selectedComplaint.description}</p>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedComplaint.description}</p>
               </div>
             </div>
             {selectedComplaint.admin_response && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Admin Response</label>
-                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                  <p className="text-gray-900 whitespace-pre-wrap">{selectedComplaint.admin_response}</p>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admin Response</label>
+                <div className="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedComplaint.admin_response}</p>
                 </div>
+              </div>
+            )}
+
+            {/* Additional Metadata */}
+            {selectedComplaint.sentiment && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Sentiment Analysis</h4>
+                <p className="text-gray-900 dark:text-white">{selectedComplaint.sentiment}</p>
               </div>
             )}
           </div>

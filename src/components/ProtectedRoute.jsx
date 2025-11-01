@@ -18,6 +18,8 @@ const ProtectedRoute = ({ children, role }) => {
         return <Navigate to="/customer" />;
       case 'SUPPLIER':
         return <Navigate to="/supplier" />;
+      case 'SYSTEM_INTEGRATOR':
+        return <Navigate to="/system-integrator" />;
       default:
         return <Navigate to="/" />;
     }

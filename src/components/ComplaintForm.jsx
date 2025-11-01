@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 
-export default function ComplaintForm({ supplierId }) {
+export default function ComplaintForm({ supplierId, onSuccess }) {
   const { user } = useContext(AuthContext);
   const getToday = () => new Date().toISOString().split("T")[0];
   const [form, setForm] = useState({
@@ -27,6 +27,7 @@ export default function ComplaintForm({ supplierId }) {
   
   const [zones, setZones] = useState([]);
   const [circles, setCircles] = useState([]);
+  const [filteredCircles, setFilteredCircles] = useState([]);
 
   useEffect(() => {
     setForm(f => ({
@@ -34,7 +35,7 @@ export default function ComplaintForm({ supplierId }) {
       customer_id: user?.id || "",
       client_name: user?.name || "",
     }));
-    
+
     // Fetch zones and circles
     const fetchLocations = async () => {
       try {
@@ -56,7 +57,6 @@ export default function ComplaintForm({ supplierId }) {
           setCircles([]);
         }
       } catch (err) {
-        console.error("Error fetching locations:", err);
         setZones([]);
         setCircles([]);
       }
@@ -64,10 +64,26 @@ export default function ComplaintForm({ supplierId }) {
     fetchLocations();
   }, [user]);
 
+  // Filter circles based on selected zone
+  useEffect(() => {
+    if (form.zone_id) {
+      const filtered = circles.filter(circle => circle.parent_id === parseInt(form.zone_id));
+      setFilteredCircles(filtered);
+    } else {
+      setFilteredCircles([]);
+    }
+  }, [form.zone_id, circles]);
+
   const [submittedComplaint, setSubmittedComplaint] = useState(null);
 
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    // Reset circle selection when zone changes
+    if (name === 'zone_id') {
+      setForm(prev => ({ ...prev, circle_id: '' }));
+    }
   }
 
   async function handleSubmit(e) {
@@ -79,17 +95,37 @@ export default function ComplaintForm({ supplierId }) {
     const payload = {
       ...form,
       customer_id: parseInt(user.id, 10),
-      zone_id: parseInt(form.zone_id, 10),
-      circle_id: parseInt(form.circle_id, 10),
-      date_of_manufacture: form.date_of_manufacture || getToday(),
+      zone_id: form.zone_id ? parseInt(form.zone_id, 10) : null,
+      circle_id: form.circle_id ? parseInt(form.circle_id, 10) : null,
+      location_id: form.circle_id ? parseInt(form.circle_id, 10) : parseInt(form.zone_id, 10),
+      date_of_manufacture: form.date_of_manufacture,
     };
     try {
       const res = await API.post("/complaints", payload);
-      setSubmittedComplaint(res.data.data); // { id, complaint_id, ... }
+      const complaintData = res.data.data; // { id, complaint_id, ... }
+      setSubmittedComplaint(complaintData);
+      
+      // Call success callback if provided
+      if (onSuccess && typeof onSuccess === 'function') {
+        onSuccess(complaintData);
+      }
     } catch (err) {
       console.error("Error submitting complaint:", err);
-      if (err.response?.data?.errors) {
-        alert(Object.values(err.response.data.errors).join("\n"));
+      console.error("Response status:", err.response?.status);
+      console.error("Response data:", err.response?.data);
+      console.error("Full error details:", err.response?.data?.errors);
+      console.error("Request payload sent:", payload);
+
+      if (err.response?.status === 400 && err.response?.data?.errors) {
+        // Validation errors - show specific field errors
+        const errorMessages = Object.entries(err.response.data.errors)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join("\n");
+        alert(`Validation failed:\n${errorMessages}`);
+      } else if (err.response?.data?.message) {
+        alert(`Server error: ${err.response.data.message}`);
+      } else {
+        alert("Failed to submit complaint. Please try again.");
       }
     }
   }
@@ -216,7 +252,7 @@ return (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             Location Information
-            <span className="text-sm font-normal text-red-500 ml-2">* (Required - Select at least one)</span>
+            <span className="text-sm font-normal text-red-500 ml-2">* (Zone required, Circle optional)</span>
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -249,20 +285,22 @@ return (
 
             <div>
               <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                Circle <span className="text-red-500">*</span>
+                Circle (Optional)
               </label>
               <div className="relative">
                 <select
                   name="circle_id"
                   value={form.circle_id}
                   onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  disabled={!form.zone_id}
+                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
-                  <option value="">Select Circle</option>
-                  {circles.map((circle) => (
+                  <option value="">
+                    {form.zone_id ? 'Select Circle (Optional)' : 'Please select a zone first'}
+                  </option>
+                  {filteredCircles.map((circle) => (
                     <option key={circle.id} value={circle.id}>
-                      🎯 {circle.name} {circle.parent_name ? `(Under ${circle.parent_name})` : ''}
+                      🎯 {circle.name}
                     </option>
                   ))}
                 </select>
@@ -396,8 +434,8 @@ return (
         </div>
 
         {/* System Integrator Information Section */}
-        <div className="bg-purple-50 rounded-xl p-6 border-2 border-dashed border-purple-200">
-          <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+        <div className="bg-purple-50 dark:bg-gray-700 rounded-xl p-6 border-2 border-dashed border-purple-200 dark:border-gray-600">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center">
             <svg className="w-6 h-6 mr-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -407,7 +445,7 @@ return (
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                 Full Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -417,10 +455,10 @@ return (
                   value={form.system_integrator_name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -428,7 +466,7 @@ return (
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                 Phone Number <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -438,10 +476,10 @@ return (
                   value={form.system_integrator_phone}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
@@ -449,7 +487,7 @@ return (
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -460,10 +498,10 @@ return (
                   value={form.system_integrator_email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
@@ -471,7 +509,7 @@ return (
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                 Company Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -481,10 +519,10 @@ return (
                   value={form.system_integrator_company}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>

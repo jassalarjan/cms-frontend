@@ -15,13 +15,19 @@ import AdminLayout from "./layouts/AdminLayout";
 import AdminHome from "./pages/admin/AdminHome";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminComplaints from "./pages/admin/AdminComplaints";
-import AdminReports from "./pages/admin/AdminReports";
+import AdvancedReports from "./pages/admin/AdvancedReports";
 import AdminLocations from "./pages/admin/AdminLocations";
 
 // Supplier Layout and Pages
 import SupplierLayout from "./layouts/SupplierLayout";
 import SupplierHome from "./pages/supplier/SupplierHome";
 import SupplierCreate from "./pages/supplier/SupplierCreate";
+
+// System Integrator Layout and Pages
+import SystemIntegratorLayout from "./layouts/SystemIntegratorLayout";
+import SystemIntegratorDashboard from "./pages/supplier/SystemIntegratorDashboard";
+import SystemIntegratorComplaints from "./pages/supplier/SystemIntegratorComplaints";
+import SupplierDashboard from "./pages/SupplierDashboard";
 
 // Customer Layout and Pages
 import CustomerLayout from "./layouts/CustomerLayout";
@@ -39,6 +45,8 @@ function App() {
         return "/admin";
       case "SUPPLIER":
         return "/supplier";
+      case "SYSTEM_INTEGRATOR":
+        return "/system-integrator";
       case "CUSTOMER":
         return "/customer";
       default:
@@ -69,7 +77,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="locations" element={<AdminLocations />} />
             <Route path="complaints" element={<AdminComplaints />} />
-            <Route path="reports" element={<AdminReports />} />
+            <Route path="advanced-reports" element={<AdvancedReports />} />
           </Route>
           
           {/* Supplier Routes */}
@@ -82,6 +90,21 @@ function App() {
             }
           >
             <Route index element={<SupplierHome />} />
+          </Route>
+          
+          {/* System Integrator Routes */}
+          <Route
+            path="/system-integrator/*"
+            element={
+              <ProtectedRoute role="SYSTEM_INTEGRATOR">
+                <SystemIntegratorLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<SystemIntegratorDashboard />} />
+            <Route path="complaints" element={<SystemIntegratorComplaints />} />
+            <Route path="reports" element={<SupplierDashboard />} />
+            <Route path="profile" element={<StatusPage />} />
           </Route>
           
           {/* Customer Routes (My Complaints only) */}

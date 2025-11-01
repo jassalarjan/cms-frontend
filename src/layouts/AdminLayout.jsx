@@ -23,7 +23,7 @@ const AdminLayout = () => {
     { name: 'Users', href: '/admin/users', icon: UserGroupIcon },
     { name: 'Location Management', href: '/admin/locations', icon: MapPinIcon },
     { name: 'Complaints', href: '/admin/complaints', icon: ExclamationTriangleIcon },
-    { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
+    { name: 'Advanced Reports', href: '/admin/advanced-reports', icon: ChartBarIcon },
   ];
 
   return (

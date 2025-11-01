@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://cms-backend.jassalarjansingh.workers.dev/api", // Local development
+  baseURL: "https://cms-backend.jassalarjansingh.workers.dev/api", // Production backend
 });
 
 // Add JWT to headers if available
