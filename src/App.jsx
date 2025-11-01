@@ -12,7 +12,7 @@ import FlowchartPage from "./pages/FlowchartPage";
 
 // Admin Layout and Pages
 import AdminLayout from "./layouts/AdminLayout";
-import AdminHome from "./pages/admin/AdminHome";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminComplaints from "./pages/admin/AdminComplaints";
 import AdvancedReports from "./pages/admin/AdvancedReports";
@@ -73,7 +73,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AdminHome />} />
+            <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="locations" element={<AdminLocations />} />
             <Route path="complaints" element={<AdminComplaints />} />

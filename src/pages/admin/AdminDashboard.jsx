@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import {
   PieChart,
   Pie,
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
         trendsRes,
       ] = await Promise.all([
         API.get("/reports/stats"),
-        API.get("/complaints"),
+        API.get("/complaints/admin/enhanced"),
         API.get("/reports/by-status"),
         API.get("/reports/by-category"),
         API.get("/reports/by-priority"),
@@ -76,6 +76,14 @@ const AdminDashboard = () => {
       setStatusData(Array.isArray(statusRes.data) ? statusRes.data : []);
       setCategoryData(Array.isArray(categoryRes.data) ? categoryRes.data : []);
       setPriorityData(Array.isArray(priorityRes.data) ? priorityRes.data : []);
+      
+      console.log("Dashboard Data Loaded:", {
+        stats: statsRes.data,
+        complaintsCount: complaintsRes.data?.length || 0,
+        statusDataCount: statusRes.data?.length || 0,
+        categoryDataCount: categoryRes.data?.length || 0,
+        priorityDataCount: priorityRes.data?.length || 0,
+      });
       
       // Format monthly trends
       const formattedTrends = Array.isArray(trendsRes.data)
@@ -90,6 +98,11 @@ const AdminDashboard = () => {
       setMonthlyTrends(formattedTrends);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
+      console.error("Error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       toast.error("Failed to fetch dashboard data");
     } finally {
       setLoading(false);
