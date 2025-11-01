@@ -189,6 +189,13 @@ export default function AdminUsers() {
 
   const handleEditUser = async (e) => {
     e.preventDefault();
+    
+    // Validate supplier locations BEFORE processing
+    if (formData.role === 'SUPPLIER' && (!formData.location_ids || formData.location_ids.length === 0)) {
+      toast.error('At least one location is required for bank officials');
+      return;
+    }
+
     try {
       const updateData = { ...formData };
       if (!updateData.password) {
@@ -196,15 +203,18 @@ export default function AdminUsers() {
       }
 
       // Ensure location_ids is properly formatted as array of integers
-      if (updateData.location_ids) {
-        updateData.location_ids = updateData.location_ids.map(id => parseInt(id));
+      if (updateData.location_ids && Array.isArray(updateData.location_ids)) {
+        updateData.location_ids = updateData.location_ids.map(id => parseInt(id, 10));
+      } else {
+        updateData.location_ids = [];
       }
 
-      // Validate supplier locations
-      if (selectedUser.role === 'SUPPLIER' && (!updateData.location_ids || updateData.location_ids.length === 0)) {
-        toast.error('At least one location is required for bank officials');
-        return;
-      }
+      console.log('Updating user with data:', {
+        user_id: selectedUser.user_id,
+        role: updateData.role,
+        location_ids: updateData.location_ids,
+        location_count: updateData.location_ids?.length || 0
+      });
 
       const res = await API.patch(`/admin/users/${selectedUser.user_id}`, updateData);
       setUsers(users.map(u => u.user_id === selectedUser.user_id ? res.data.data : u));
@@ -234,6 +244,27 @@ export default function AdminUsers() {
   };
 
   const openEditModal = (user) => {
+    console.log('Opening edit modal for user:', {
+      user_id: user.user_id,
+      name: user.name,
+      role: user.role,
+      location_ids_raw: user.location_ids,
+      location_ids_type: typeof user.location_ids
+    });
+
+    // Parse location_ids properly - handle both string and array formats
+    let parsedLocationIds = [];
+    if (user.location_ids) {
+      if (Array.isArray(user.location_ids)) {
+        parsedLocationIds = user.location_ids.map(id => parseInt(id, 10));
+      } else if (typeof user.location_ids === 'string') {
+        parsedLocationIds = user.location_ids.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+      } else if (typeof user.location_ids === 'number') {
+        parsedLocationIds = [parseInt(user.location_ids, 10)];
+      }
+    }
+
+    console.log('Parsed location_ids:', parsedLocationIds);
 
     setSelectedUser(user);
     setFormData({
@@ -243,7 +274,7 @@ export default function AdminUsers() {
       phone: user.phone || '',
       address: user.address || '',
       password: '',
-      location_ids: user.location_ids ? user.location_ids.split(',').map(id => parseInt(id.trim())) : []
+      location_ids: parsedLocationIds
     });
     setShowEditModal(true);
   };

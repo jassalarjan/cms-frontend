@@ -146,14 +146,68 @@ const AdminDashboard = () => {
     setDateRange("30");
   };
 
+  // Count active filters
+  const activeFiltersCount = [
+    statusFilter !== "ALL",
+    priorityFilter !== "ALL",
+    categoryFilter !== "ALL",
+    dateRange !== "30"
+  ].filter(Boolean).length;
+
+  // Get filter summary text
+  const getFilterSummary = () => {
+    if (activeFiltersCount === 0) return "All complaints";
+    const filters = [];
+    if (statusFilter !== "ALL") filters.push(statusFilter);
+    if (priorityFilter !== "ALL") filters.push(priorityFilter);
+    if (categoryFilter !== "ALL") filters.push(categoryFilter);
+    if (dateRange !== "30") filters.push(dateRange === "ALL" ? "All time" : `${dateRange}d`);
+    return filters.join(" • ");
+  };
+
   // Export to CSV
   const exportToCSV = () => {
     try {
+      // Get ALL filtered complaints (not just the displayed 50)
+      const allFilteredComplaints = complaints.filter((c) => {
+        if (statusFilter !== "ALL" && c.status !== statusFilter) return false;
+        if (priorityFilter !== "ALL" && c.priority !== priorityFilter) return false;
+        if (categoryFilter !== "ALL" && c.category !== categoryFilter) return false;
+        if (dateRange !== "ALL") {
+          const daysAgo = parseInt(dateRange);
+          const complainDate = new Date(c.created_at);
+          const cutoffDate = new Date();
+          cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+          if (complainDate < cutoffDate) return false;
+        }
+        return true;
+      });
+
+      // Calculate filtered statistics
+      const filteredStats = {
+        total: allFilteredComplaints.length,
+        resolved: allFilteredComplaints.filter(c => c.status === 'RESOLVED').length,
+        open: allFilteredComplaints.filter(c => c.status === 'OPEN').length,
+        inProgress: allFilteredComplaints.filter(c => c.status === 'IN_PROGRESS').length,
+        closed: allFilteredComplaints.filter(c => c.status === 'CLOSED').length,
+      };
+
       // Prepare CSV data
       const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Customer', 'Created Date'];
       const csvRows = [headers.join(',')];
 
-      filteredComplaints.forEach(complaint => {
+      // Add filter info
+      csvRows.push('');
+      csvRows.push('APPLIED FILTERS');
+      csvRows.push(`Status Filter,${statusFilter}`);
+      csvRows.push(`Priority Filter,${priorityFilter}`);
+      csvRows.push(`Category Filter,${categoryFilter}`);
+      csvRows.push(`Date Range,${dateRange === 'ALL' ? 'All Time' : `Last ${dateRange} Days`}`);
+      csvRows.push('');
+      csvRows.push('COMPLAINT DATA');
+      csvRows.push(headers.join(','));
+
+      allFilteredComplaints.forEach(complaint => {
         const row = [
           complaint.id,
           `"${complaint.title.replace(/"/g, '""')}"`, // Escape quotes
@@ -166,13 +220,16 @@ const AdminDashboard = () => {
         csvRows.push(row.join(','));
       });
 
-      // Add summary statistics
+      // Add filtered summary statistics
       csvRows.push('');
-      csvRows.push('SUMMARY STATISTICS');
-      csvRows.push(`Total Complaints,${stats?.totalComplaints || 0}`);
-      csvRows.push(`Resolved Complaints,${stats?.resolvedComplaints || 0}`);
-      csvRows.push(`Avg Resolution Time (hrs),${stats?.avgResolutionTime ? Number(stats.avgResolutionTime).toFixed(2) : '0.00'}`);
-      csvRows.push(`Customer Satisfaction,${stats?.customerSatisfaction || 0}%`);
+      csvRows.push('FILTERED SUMMARY STATISTICS');
+      csvRows.push(`Total Complaints (Filtered),${filteredStats.total}`);
+      csvRows.push(`Resolved Complaints (Filtered),${filteredStats.resolved}`);
+      csvRows.push(`Open Complaints (Filtered),${filteredStats.open}`);
+      csvRows.push(`In Progress (Filtered),${filteredStats.inProgress}`);
+      csvRows.push(`Closed Complaints (Filtered),${filteredStats.closed}`);
+
+      csvRows.push(`Closed Complaints (Filtered),${filteredStats.closed}`);
 
       // Create blob and download
       const csvContent = csvRows.join('\n');
@@ -181,13 +238,13 @@ const AdminDashboard = () => {
       const url = URL.createObjectURL(blob);
       
       link.setAttribute('href', url);
-      link.setAttribute('download', `dashboard_report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `dashboard_report_filtered_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      toast.success('Report exported to CSV successfully!');
+      toast.success(`Report exported! ${allFilteredComplaints.length} complaints included.`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export report');
@@ -197,20 +254,75 @@ const AdminDashboard = () => {
   // Export filtered data to JSON
   const exportToJSON = () => {
     try {
+      // Get ALL filtered complaints (not just the displayed 50)
+      const allFilteredComplaints = complaints.filter((c) => {
+        if (statusFilter !== "ALL" && c.status !== statusFilter) return false;
+        if (priorityFilter !== "ALL" && c.priority !== priorityFilter) return false;
+        if (categoryFilter !== "ALL" && c.category !== categoryFilter) return false;
+        if (dateRange !== "ALL") {
+          const daysAgo = parseInt(dateRange);
+          const complainDate = new Date(c.created_at);
+          const cutoffDate = new Date();
+          cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+          if (complainDate < cutoffDate) return false;
+        }
+        return true;
+      });
+
+      // Calculate filtered distributions
+      const filteredStatusData = {};
+      const filteredCategoryData = {};
+      const filteredPriorityData = {};
+
+      allFilteredComplaints.forEach(complaint => {
+        // Status distribution
+        filteredStatusData[complaint.status] = (filteredStatusData[complaint.status] || 0) + 1;
+        // Category distribution
+        filteredCategoryData[complaint.category] = (filteredCategoryData[complaint.category] || 0) + 1;
+        // Priority distribution
+        filteredPriorityData[complaint.priority] = (filteredPriorityData[complaint.priority] || 0) + 1;
+      });
+
+      // Convert to array format
+      const statusDistribution = Object.keys(filteredStatusData).map(key => ({
+        status: key,
+        count: filteredStatusData[key]
+      }));
+
+      const categoryDistribution = Object.keys(filteredCategoryData).map(key => ({
+        category: key,
+        count: filteredCategoryData[key]
+      }));
+
+      const priorityDistribution = Object.keys(filteredPriorityData).map(key => ({
+        priority: key,
+        count: filteredPriorityData[key]
+      }));
+
+      // Calculate filtered statistics
+      const filteredStats = {
+        totalComplaints: allFilteredComplaints.length,
+        resolvedComplaints: allFilteredComplaints.filter(c => c.status === 'RESOLVED').length,
+        openComplaints: allFilteredComplaints.filter(c => c.status === 'OPEN').length,
+        inProgressComplaints: allFilteredComplaints.filter(c => c.status === 'IN_PROGRESS').length,
+        closedComplaints: allFilteredComplaints.filter(c => c.status === 'CLOSED').length,
+      };
+
       const exportData = {
         generated: new Date().toISOString(),
-        filters: {
+        appliedFilters: {
           status: statusFilter,
           priority: priorityFilter,
           category: categoryFilter,
-          dateRange: dateRange
+          dateRange: dateRange === 'ALL' ? 'All Time' : `Last ${dateRange} Days`
         },
-        statistics: stats,
-        complaints: filteredComplaints,
+        filteredStatistics: filteredStats,
+        originalStatistics: stats,
+        complaints: allFilteredComplaints,
         distributions: {
-          status: statusData,
-          category: categoryData,
-          priority: priorityData
+          status: statusDistribution,
+          category: categoryDistribution,
+          priority: priorityDistribution
         },
         trends: monthlyTrends
       };
@@ -221,13 +333,13 @@ const AdminDashboard = () => {
       const url = URL.createObjectURL(blob);
       
       link.setAttribute('href', url);
-      link.setAttribute('download', `dashboard_data_${new Date().toISOString().split('T')[0]}.json`);
+      link.setAttribute('download', `dashboard_data_filtered_${new Date().toISOString().split('T')[0]}.json`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      toast.success('Data exported to JSON successfully!');
+      toast.success(`Data exported! ${allFilteredComplaints.length} complaints included.`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export data');
@@ -424,6 +536,29 @@ const AdminDashboard = () => {
             </select>
           </div>
         </div>
+        
+        {/* Active Filters Summary */}
+        {activeFiltersCount > 0 && (
+          <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FunnelIcon className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-blue-900 mb-1">
+                  Active Filters ({activeFiltersCount})
+                </h4>
+                <p className="text-sm text-blue-700">
+                  Exports will include only: <span className="font-semibold">{getFilterSummary()}</span>
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  {filteredComplaints.length} complaint{filteredComplaints.length !== 1 ? 's' : ''} match your current filters
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             onClick={handleResetFilters}
@@ -437,6 +572,11 @@ const AdminDashboard = () => {
           >
             <ArrowDownTrayIcon className="h-5 w-5" />
             Export CSV
+            {activeFiltersCount > 0 && (
+              <span className="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">
+                {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''}
+              </span>
+            )}
           </button>
           <button
             onClick={exportToJSON}
@@ -444,6 +584,11 @@ const AdminDashboard = () => {
           >
             <DocumentArrowDownIcon className="h-5 w-5" />
             Export JSON
+            {activeFiltersCount > 0 && (
+              <span className="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">
+                {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''}
+              </span>
+            )}
           </button>
           <button
             onClick={() => navigate("/admin/advanced-reports")}
