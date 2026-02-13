@@ -14,6 +14,7 @@ import {
   DocumentTextIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline';
 
 const CustomerLayout = () => {
@@ -24,6 +25,7 @@ const CustomerLayout = () => {
   const navigation = [
     { name: 'New Complaint', href: '/customer/create', icon: PlusCircleIcon },
     { name: 'My Complaints', href: '/customer', icon: ExclamationTriangleIcon },
+    { name: 'Register Panel', href: '/customer/register-panel', icon: RectangleGroupIcon },
   ];
 
   return (

@@ -3,6 +3,7 @@ import API from '../../api/axios';
 import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import Loading from '../../components/Loading';
+import MediaViewer from '../../components/MediaViewer';
 import { 
   ExclamationTriangleIcon,
   EyeIcon,
@@ -14,7 +15,8 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  PaperClipIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -24,6 +26,7 @@ export default function AdminComplaints() {
   const [filteredComplaints, setFilteredComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,6 +57,49 @@ export default function AdminComplaints() {
       toast.error('Failed to load complaints');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchComplaintDetails = async (complaintId) => {
+    setLoadingDetails(true);
+    try {
+      const [detailsRes, attachmentsRes] = await Promise.all([
+        API.get(`/complaints/${complaintId}/details`),
+        API.get(`/complaints/${complaintId}/attachments`)
+      ]);
+      
+      setSelectedComplaint({
+        ...detailsRes.data,
+        attachments: attachmentsRes.data?.success ? attachmentsRes.data.data : []
+      });
+    } catch (err) {
+      console.error('Error fetching complaint details:', err);
+      toast.error('Failed to load complaint details');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId) => {
+    try {
+      const res = await API.delete(`/complaints/attachments/${attachmentId}`);
+      
+      if (res.data.success) {
+        toast.success('Attachment deleted successfully');
+        
+        // Refresh attachments
+        if (selectedComplaint?.id) {
+          const attachmentsRes = await API.get(`/complaints/${selectedComplaint.id}/attachments`);
+          setSelectedComplaint({
+            ...selectedComplaint,
+            attachments: attachmentsRes.data?.success ? attachmentsRes.data.data : []
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting attachment:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete attachment');
+      throw err; // Re-throw to let MediaViewer handle the error state
     }
   };
 
@@ -216,7 +262,7 @@ export default function AdminComplaints() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedComplaint(item);
+              fetchComplaintDetails(item.id);
               setShowComplaintModal(true);
             }}
             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -562,6 +608,25 @@ export default function AdminComplaints() {
                 <p className="text-gray-900 dark:text-white">{selectedComplaint.sentiment}</p>
               </div>
             )}
+
+            {/* Attachments Section */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <PaperClipIcon className="h-5 w-5 mr-2 text-gray-600" />
+                Attachments ({selectedComplaint.attachments?.length || 0})
+              </h4>
+              {loadingDetails ? (
+                <div className="text-center py-8">
+                  <Loading type="spinner" size="sm" />
+                </div>
+              ) : (
+                <MediaViewer 
+                  attachments={selectedComplaint.attachments || []} 
+                  allowDelete={true}
+                  onDelete={handleDeleteAttachment}
+                />
+              )}
+            </div>
           </div>
         )}
         <Modal.Footer>

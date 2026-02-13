@@ -147,6 +147,16 @@ export default function Navbar() {
                         <Menu.Item>
                           {({ active }) => (
                             <button
+                              onClick={() => navigate('/privacy-policy')}
+                              className={`${active ? "bg-gray-100" : ""} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                            >
+                              Privacy Policy
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
                               onClick={toggleTheme}
                               className={`${active ? "bg-gray-100" : ""} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
                             >
@@ -230,6 +240,12 @@ export default function Navbar() {
               </span>
             </div>
             <div className="mt-3 space-y-1">
+              <button
+                onClick={() => navigate('/privacy-policy')}
+                className="flex items-center w-full px-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                Privacy Policy
+              </button>
               <button
                 onClick={toggleTheme}
                 className="flex items-center w-full px-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"

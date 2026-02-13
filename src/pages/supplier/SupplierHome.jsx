@@ -135,10 +135,19 @@ export default function SupplierHome() {
     setViewLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await API.get(`/complaints/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const [complaintRes, attachmentsRes] = await Promise.all([
+        API.get(`/complaints/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        API.get(`/complaints/${id}/attachments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      ]);
+      
+      setViewComplaint({
+        ...complaintRes.data,
+        attachments: attachmentsRes.data?.success ? attachmentsRes.data.data : []
       });
-      setViewComplaint(res.data);
       setShowViewModal(true);
     } catch (err) {
       console.error('Error fetching complaint details:', err);

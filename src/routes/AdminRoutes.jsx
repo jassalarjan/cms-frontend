@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import AdminHome from '../pages/admin/AdminHome';
 import AdminComplaints from '../pages/admin/AdminComplaints';
 import AdminUsers from '../pages/admin/AdminUsers';
-import LocationManagement from '../pages/admin/LocationManagement';
+import AdminLocations from '../pages/admin/AdminLocations';
 import AdminReports from '../pages/admin/AdminReports';
 import AdminLayout from '../layouts/AdminLayout';
 
@@ -15,7 +15,7 @@ const AdminRoutes = () => {
         <Route path="complaints" element={<AdminComplaints />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="reports" element={<AdminReports />} />
-        <Route path="locations" element={<LocationManagement />} />
+        <Route path="locations" element={<AdminLocations />} />
       </Route>
     </Routes>
   );

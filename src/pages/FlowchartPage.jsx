@@ -28,6 +28,12 @@ export default function FlowchartPage() {
             </div>
             <div className="flex items-center space-x-4">
               <Link
+                to="/privacy-policy"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
                 to="/login"
                 className="btn-primary"
               >

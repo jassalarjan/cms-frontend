@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import UserGuide from "./pages/UserGuide";
 import FlowchartPage from "./pages/FlowchartPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 // Admin Layout and Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -17,22 +18,24 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminComplaints from "./pages/admin/AdminComplaints";
 import AdvancedReports from "./pages/admin/AdvancedReports";
 import AdminLocations from "./pages/admin/AdminLocations";
+import AdminPanels from "./pages/admin/AdminPanels";
 
 // Supplier Layout and Pages
 import SupplierLayout from "./layouts/SupplierLayout";
 import SupplierHome from "./pages/supplier/SupplierHome";
 import SupplierCreate from "./pages/supplier/SupplierCreate";
+import SupplierDashboard from "./pages/supplier/SupplierDashboard";
 
 // System Integrator Layout and Pages
 import SystemIntegratorLayout from "./layouts/SystemIntegratorLayout";
 import SystemIntegratorDashboard from "./pages/supplier/SystemIntegratorDashboard";
 import SystemIntegratorComplaints from "./pages/supplier/SystemIntegratorComplaints";
-import SupplierDashboard from "./pages/SupplierDashboard";
 
 // Customer Layout and Pages
 import CustomerLayout from "./layouts/CustomerLayout";
 import CustomerHome from "./pages/customer/CustomerHome";
 import CustomerCreate from "./pages/customer/CustomerCreate";
+import PanelRegistrationPage from "./pages/PanelRegistrationPage";
 import StatusPage from "./pages/StatusPage";
 import "./index.css";
 function App() {
@@ -63,6 +66,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/user-guide" element={<UserGuide />} />
           <Route path="/flowchart" element={<FlowchartPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           
           {/* Admin Routes */}
           <Route
@@ -76,6 +80,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="locations" element={<AdminLocations />} />
+            <Route path="panels" element={<AdminPanels />} />
             <Route path="complaints" element={<AdminComplaints />} />
             <Route path="advanced-reports" element={<AdvancedReports />} />
           </Route>
@@ -89,9 +94,12 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<SupplierHome />} />
+            <Route index element={<SupplierDashboard />} />
+            <Route path="complaints" element={<SupplierHome />} />
+            <Route path="reports" element={<SupplierDashboard />} />
+            <Route path="profile" element={<StatusPage />} />
           </Route>
-          
+
           {/* System Integrator Routes */}
           <Route
             path="/system-integrator/*"
@@ -118,6 +126,7 @@ function App() {
           >
             <Route index element={<CustomerHome />} />
             <Route path="create" element={<CustomerCreate />} />
+            <Route path="register-panel" element={<PanelRegistrationPage />} />
           </Route>
           <Route path="/" element={<Navigate to={getDashboardRoute()} />} />
         </Routes>

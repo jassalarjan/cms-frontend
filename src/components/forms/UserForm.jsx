@@ -109,12 +109,29 @@ export const UserForm = React.memo(({
   isEdit = false 
 }) => {
   const [locations, setLocations] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [circles, setCircles] = useState([]);
+  const [branches, setBranches] = useState([]);
+  
+  // For cascading dropdowns
+  const [selectedZoneForFilter, setSelectedZoneForFilter] = useState('');
+  const [selectedCircleForFilter, setSelectedCircleForFilter] = useState('');
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await API.get('/locations');
-        setLocations(response.data.data);
+        const [allLocsResponse, zonesResponse] = await Promise.all([
+          API.get('/locations'),
+          API.get('/locations/zones')
+        ]);
+        
+        const allLocations = allLocsResponse.data.data;
+        setLocations(allLocations);
+        setZones(zonesResponse.data.data);
+        
+        // Group by type
+        setCircles(allLocations.filter(loc => loc.type === 'CIRCLE'));
+        setBranches(allLocations.filter(loc => loc.type === 'BRANCH'));
       } catch (error) {
         console.error('Error fetching locations:', error);
       }
@@ -124,6 +141,28 @@ export const UserForm = React.memo(({
       fetchLocations();
     }
   }, [formData.role]);
+
+  // Get filtered circles based on selected zone
+  const getFilteredCircles = () => {
+    if (!selectedZoneForFilter) return circles;
+    return circles.filter(c => c.parent_id === parseInt(selectedZoneForFilter));
+  };
+
+  // Get filtered branches based on selected circle
+  const getFilteredBranches = () => {
+    if (!selectedCircleForFilter) return branches;
+    return branches.filter(b => b.parent_id === parseInt(selectedCircleForFilter));
+  };
+
+  // Toggle location selection
+  const toggleLocation = (locationId) => {
+    const currentIds = formData.location_ids || [];
+    if (currentIds.includes(locationId)) {
+      handleChange('location_ids', currentIds.filter(id => id !== locationId));
+    } else {
+      handleChange('location_ids', [...currentIds, locationId]);
+    }
+  };
 
   const handleChange = useCallback((field, value) => {
     onFormChange(field, value);
@@ -199,20 +238,23 @@ export const UserForm = React.memo(({
                 <div className="flex flex-wrap gap-2">
                   {formData.location_ids.map(locationId => {
                     const location = locations.find(loc => loc.id === locationId);
+                    const typeColors = {
+                      'ZONE': 'bg-purple-100 text-purple-800 border-purple-200',
+                      'CIRCLE': 'bg-green-100 text-green-800 border-green-200',
+                      'BRANCH': 'bg-blue-100 text-blue-800 border-blue-200'
+                    };
                     return (
                       <span
                         key={locationId}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm border ${typeColors[location?.type] || 'bg-gray-100 text-gray-800 border-gray-200'}`}
                       >
                         <MapPinIcon className="h-3 w-3 mr-1" />
                         {location?.name || `Location ${locationId}`}
+                        <span className="ml-1 text-xs opacity-75">({location?.type})</span>
                         <button
                           type="button"
-                          onClick={() => {
-                            const newLocationIds = formData.location_ids.filter(id => id !== locationId);
-                            handleChange('location_ids', newLocationIds);
-                          }}
-                          className="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                          onClick={() => toggleLocation(locationId)}
+                          className="ml-2 hover:opacity-75 focus:outline-none"
                         >
                           ×
                         </button>
@@ -223,57 +265,163 @@ export const UserForm = React.memo(({
               </div>
             )}
 
-            {/* Available Locations Grid */}
-            <div className="border border-gray-200 rounded-lg p-4 max-h-48 overflow-y-auto">
-              <p className="text-sm text-gray-600 mb-3">
-                {formData.location_ids && formData.location_ids.length > 0
-                  ? 'Click to add more locations:'
-                  : 'Select locations:'}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {locations.map(location => {
-                  const isSelected = formData.location_ids && formData.location_ids.includes(location.id);
-                  return (
-                    <label
-                      key={location.id}
-                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
-                        isSelected
-                          ? 'bg-blue-50 border-blue-300 text-blue-900'
-                          : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            const newLocationIds = [...(formData.location_ids || []), location.id];
-                            handleChange('location_ids', newLocationIds);
-                          } else {
-                            const newLocationIds = formData.location_ids.filter(id => id !== location.id);
-                            handleChange('location_ids', newLocationIds);
-                          }
-                        }}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <div className="ml-3 flex-1">
-                        <div className="flex items-center">
-                          <MapPinIcon className="h-4 w-4 mr-2 text-gray-400" />
-                          <span className="text-sm font-medium">{location.name}</span>
-                        </div>
-                        {location.description && (
-                          <p className="text-xs text-gray-500 mt-1">{location.description}</p>
-                        )}
-                      </div>
-                      {isSelected && (
-                        <div className="ml-2">
-                          <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                        </div>
-                      )}
-                    </label>
-                  );
-                })}
+            {/* Location Selection by Type */}
+            <div className="border border-gray-200 rounded-lg p-4 space-y-6">
+              
+              {/* Zones Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-purple-700 flex items-center">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                    Zones
+                  </h4>
+                  <span className="text-xs text-gray-500">
+                    {zones.filter(z => formData.location_ids?.includes(z.id)).length} selected
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                  {zones.map(zone => {
+                    const isSelected = formData.location_ids?.includes(zone.id);
+                    return (
+                      <label
+                        key={zone.id}
+                        className={`flex items-center p-2 rounded-lg border cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-purple-50 border-purple-300'
+                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleLocation(zone.id)}
+                          className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        />
+                        <span className="ml-2 text-sm">{zone.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Circles Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-green-700 flex items-center">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Circles
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {circles.filter(c => formData.location_ids?.includes(c.id)).length} selected
+                    </span>
+                    <select
+                      value={selectedZoneForFilter}
+                      onChange={(e) => setSelectedZoneForFilter(e.target.value)}
+                      className="text-xs px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-green-500"
+                    >
+                      <option value="">All Circles</option>
+                      {zones.map(zone => (
+                        <option key={zone.id} value={zone.id}>Filter by: {zone.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                  {getFilteredCircles().map(circle => {
+                    const isSelected = formData.location_ids?.includes(circle.id);
+                    const parentZone = zones.find(z => z.id === circle.parent_id);
+                    return (
+                      <label
+                        key={circle.id}
+                        className={`flex items-center p-2 rounded-lg border cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleLocation(circle.id)}
+                          className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <div className="ml-2 flex-1">
+                          <span className="text-sm">{circle.name}</span>
+                          {parentZone && (
+                            <span className="text-xs text-gray-500 ml-1">({parentZone.name})</span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
+                  {getFilteredCircles().length === 0 && (
+                    <p className="text-xs text-gray-500 col-span-2 text-center py-2">
+                      No circles found
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Branches Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-blue-700 flex items-center">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    Branches
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {branches.filter(b => formData.location_ids?.includes(b.id)).length} selected
+                    </span>
+                    <select
+                      value={selectedCircleForFilter}
+                      onChange={(e) => setSelectedCircleForFilter(e.target.value)}
+                      className="text-xs px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">All Branches</option>
+                      {getFilteredCircles().map(circle => (
+                        <option key={circle.id} value={circle.id}>Filter by: {circle.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                  {getFilteredBranches().map(branch => {
+                    const isSelected = formData.location_ids?.includes(branch.id);
+                    const parentCircle = circles.find(c => c.id === branch.parent_id);
+                    return (
+                      <label
+                        key={branch.id}
+                        className={`flex items-center p-2 rounded-lg border cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-blue-50 border-blue-300'
+                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleLocation(branch.id)}
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <div className="ml-2 flex-1">
+                          <span className="text-sm">{branch.name}</span>
+                          {parentCircle && (
+                            <span className="text-xs text-gray-500 ml-1">({parentCircle.name})</span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
+                  {getFilteredBranches().length === 0 && (
+                    <p className="text-xs text-gray-500 col-span-2 text-center py-2">
+                      No branches found
+                    </p>
+                  )}
+                </div>
+              </div>
+
             </div>
 
             {(!formData.location_ids || formData.location_ids.length === 0) && (

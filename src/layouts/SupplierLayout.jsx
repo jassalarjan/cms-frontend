@@ -26,6 +26,9 @@ const SupplierLayout = () => {
 
   const navigation = [
     { name: 'Dashboard', href: '/supplier', icon: HomeIcon },
+    { name: 'Complaints', href: '/supplier/complaints', icon: ExclamationTriangleIcon },
+    { name: 'Reports', href: '/supplier/reports', icon: ChartBarIcon },
+    { name: 'Profile', href: '/supplier/profile', icon: UserIcon },
   ];
 
   return (
@@ -57,7 +60,7 @@ const SupplierLayout = () => {
             </div>
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="px-4">
-                <h2 className="text-lg font-semibold text-gray-900">Supplier Portal</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Bank Officer Portal</h2>
               </div>
               <nav className="mt-8 px-4">
                 <div className="space-y-1">
@@ -91,8 +94,8 @@ const SupplierLayout = () => {
                 <div className="flex items-center justify-between">
                   {!sidebarCollapsed && (
                     <>
-                      <h2 className="text-xl font-bold text-gray-900">Supplier Portal</h2>
-                      <p className="text-sm text-gray-500 mt-1">Manage complaints for your location</p>
+                      <h2 className="text-xl font-bold text-gray-900">Bank Officer Portal</h2>
+                      <p className="text-sm text-gray-500 mt-1">Manage complaints for your zone</p>
                     </>
                   )}
                   <button

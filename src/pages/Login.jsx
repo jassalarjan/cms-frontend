@@ -242,6 +242,10 @@ export default function Login() {
                       <ChartBarIcon className="h-4 w-4 mr-1" />
                       Flowchart
                     </Link>
+                    <span className="text-gray-400">•</span>
+                    <Link to="/privacy-policy" className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors">
+                      Privacy Policy
+                    </Link>
                   </div>
                 </div>
               </div>

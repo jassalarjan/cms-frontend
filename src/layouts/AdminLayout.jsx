@@ -11,6 +11,7 @@ import {
   MapPinIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminLayout = () => {
@@ -22,6 +23,7 @@ const AdminLayout = () => {
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Users', href: '/admin/users', icon: UserGroupIcon },
     { name: 'Location Management', href: '/admin/locations', icon: MapPinIcon },
+    { name: 'Panel Management', href: '/admin/panels', icon: RectangleGroupIcon },
     { name: 'Complaints', href: '/admin/complaints', icon: ExclamationTriangleIcon },
     { name: 'Advanced Reports', href: '/admin/advanced-reports', icon: ChartBarIcon },
   ];

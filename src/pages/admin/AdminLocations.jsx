@@ -23,12 +23,15 @@ export default function AdminLocations() {
   const navigate = useNavigate();
   const [zones, setZones] = useState([]);
   const [circles, setCircles] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [filteredZones, setFilteredZones] = useState([]);
   const [filteredCircles, setFilteredCircles] = useState([]);
+  const [filteredBranches, setFilteredBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [showAddZoneModal, setShowAddZoneModal] = useState(false);
   const [showAddCircleModal, setShowAddCircleModal] = useState(false);
+  const [showAddBranchModal, setShowAddBranchModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('zones');
@@ -46,27 +49,31 @@ export default function AdminLocations() {
   const totals = useMemo(() => {
     const totalZones = zones.length;
     const totalCircles = circles.length;
-    const totalUsers = [...zones, ...circles].reduce((sum, l) => sum + (Number(l.assigned_users) || 0), 0);
-    const totalComplaints = [...zones, ...circles].reduce((sum, l) => sum + (Number(l.total_complaints) || 0), 0);
-    return { totalZones, totalCircles, totalUsers, totalComplaints };
-  }, [zones, circles]);
+    const totalBranches = branches.length;
+    const totalUsers = [...zones, ...circles, ...branches].reduce((sum, l) => sum + (Number(l.assigned_users) || 0), 0);
+    const totalComplaints = [...zones, ...circles, ...branches].reduce((sum, l) => sum + (Number(l.total_complaints) || 0), 0);
+    return { totalZones, totalCircles, totalBranches, totalUsers, totalComplaints };
+  }, [zones, circles, branches]);
 
   const fetchLocations = async () => {
     try {
       setLoading(true);
-      const [zonesResponse, circlesResponse] = await Promise.all([
+      const [zonesResponse, allLocationsResponse] = await Promise.all([
         API.get('/locations/zones'),
         API.get('/locations')
       ]);
 
       const zonesData = zonesResponse.data.data;
-      const allLocations = circlesResponse.data.data;
+      const allLocations = allLocationsResponse.data.data;
       const circlesData = allLocations.filter(loc => loc.type === 'CIRCLE');
+      const branchesData = allLocations.filter(loc => loc.type === 'BRANCH');
 
       setZones(zonesData);
       setCircles(circlesData);
+      setBranches(branchesData);
       setFilteredZones(zonesData);
       setFilteredCircles(circlesData);
+      setFilteredBranches(branchesData);
     } catch (error) {
       console.error('Error fetching locations:', error);
       toast.error('Failed to fetch locations');
@@ -93,7 +100,14 @@ export default function AdminLocations() {
       circle.country?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredCircles(filteredC);
-  }, [searchTerm, zones, circles]);
+
+    const filteredB = branches.filter(branch =>
+      branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      branch.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      branch.country?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBranches(filteredB);
+  }, [searchTerm, zones, circles, branches]);
 
   const handleAddZone = async () => {
     try {
@@ -120,6 +134,20 @@ export default function AdminLocations() {
     } catch (error) {
       console.error('Error adding circle:', error);
       toast.error(error.response?.data?.message || 'Failed to add circle');
+    }
+  };
+
+  const handleAddBranch = async () => {
+    try {
+      const branchData = { ...formData, type: 'BRANCH' };
+      await API.post('/locations', branchData);
+      toast.success('Branch added successfully');
+      setShowAddBranchModal(false);
+      resetForm();
+      fetchLocations();
+    } catch (error) {
+      console.error('Error adding branch:', error);
+      toast.error(error.response?.data?.message || 'Failed to add branch');
     }
   };
 
@@ -357,6 +385,88 @@ export default function AdminLocations() {
     },
   ];
 
+  const branchColumns = [
+    {
+      title: 'Branch Name',
+      key: 'name',
+      render: (value, row) => (
+        <div>
+          <div className="flex items-center">
+            <BuildingOfficeIcon className="h-5 w-5 text-blue-600 mr-2" />
+            <span className="font-medium text-gray-900">{value}</span>
+          </div>
+          {row.parent_name && (
+            <div className="text-xs text-gray-500 mt-1">Under: {row.parent_name}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: 'Description',
+      key: 'description',
+      render: (value) => (
+        <div className="max-w-xs truncate text-gray-700">{value || '-'}</div>
+      ),
+    },
+    {
+      title: 'Address',
+      key: 'address',
+      render: (value) => (
+        <div className="max-w-xs truncate text-gray-700">{value || '-'}</div>
+      ),
+    },
+    {
+      title: 'City',
+      key: 'city',
+      render: (value) => value ? (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          {value}
+        </span>
+      ) : '-',
+    },
+    {
+      title: 'Country',
+      key: 'country',
+      render: (value) => value ? (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+          {value}
+        </span>
+      ) : '-',
+    },
+    {
+      title: 'Users',
+      key: 'assigned_users',
+      render: (value) => value ?? 0,
+    },
+    {
+      title: 'Complaints',
+      key: 'total_complaints',
+      render: (value) => value ?? 0,
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_value, row) => (
+        <div className="flex space-x-2">
+          <button
+            title="Edit branch"
+            onClick={() => openEditModal(row)}
+            className="p-1.5 rounded text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+          >
+            <PencilIcon className="h-5 w-5" />
+          </button>
+          <button
+            title="Delete branch"
+            onClick={() => handleDeleteLocation(row.id)}
+            className="p-1.5 rounded text-red-600 hover:text-red-800 hover:bg-red-50"
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   if (loading) return <Loading />;
 
   return (
@@ -381,7 +491,7 @@ export default function AdminLocations() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-6">
         <div className="rounded-lg border bg-white p-4 shadow-sm flex items-center">
           <div className="p-2 rounded-md bg-purple-100 text-purple-600 mr-3">
             <BuildingOfficeIcon className="h-5 w-5" />
@@ -398,6 +508,15 @@ export default function AdminLocations() {
           <div>
             <div className="text-sm text-gray-500">Circles</div>
             <div className="text-xl font-semibold">{totals.totalCircles}</div>
+          </div>
+        </div>
+        <div className="rounded-lg border bg-white p-4 shadow-sm flex items-center">
+          <div className="p-2 rounded-md bg-blue-100 text-blue-600 mr-3">
+            <BuildingOfficeIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm text-gray-500">Branches</div>
+            <div className="text-xl font-semibold">{totals.totalBranches}</div>
           </div>
         </div>
         <div className="rounded-lg border bg-white p-4 shadow-sm flex items-center">
@@ -446,6 +565,17 @@ export default function AdminLocations() {
               <MapPinIcon className="h-5 w-5 inline mr-2" />
               Circles ({totals.totalCircles})
             </button>
+            <button
+              onClick={() => setActiveTab('branches')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'branches'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <BuildingOfficeIcon className="h-5 w-5 inline mr-2" />
+              Branches ({totals.totalBranches})
+            </button>
           </nav>
         </div>
       </div>
@@ -489,6 +619,28 @@ export default function AdminLocations() {
             columns={circleColumns}
             data={filteredCircles}
             emptyMessage="No circles found"
+            className="ring-1 ring-gray-200"
+          />
+        </div>
+      )}
+
+      {/* Branches Tab */}
+      {activeTab === 'branches' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-900">Branch Management</h2>
+            <button
+              onClick={() => setShowAddBranchModal(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <PlusIcon className="h-5 w-5 mr-1" />
+              Add Branch
+            </button>
+          </div>
+          <DataTable
+            columns={branchColumns}
+            data={filteredBranches}
+            emptyMessage="No branches found"
             className="ring-1 ring-gray-200"
           />
         </div>
@@ -808,13 +960,113 @@ export default function AdminLocations() {
         </form>
       </Modal>
 
+      {/* Add Branch Modal */}
+      <Modal
+        isOpen={showAddBranchModal}
+        onClose={() => {
+          setShowAddBranchModal(false);
+          resetForm();
+        }}
+        title="Add New Branch"
+      >
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          handleAddBranch();
+        }}>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Parent Circle <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.parent_id}
+                    onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900"
+                    required
+                  >
+                    <option value="">Select a circle...</option>
+                    {circles.map(circle => (
+                      <option key={circle.id} value={circle.id}>{circle.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Branch Name <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"
+                    placeholder="Enter branch name..."
+                    required
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <BuildingOfficeIcon className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 resize-none"
+                placeholder="Enter branch description..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white placeholder-gray-400"
+                placeholder="Enter city..."
+              />
+            </div>
+          </div>
+          <div className="mt-8 flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddBranchModal(false);
+                resetForm();
+              }}
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
+            >
+              <BuildingOfficeIcon className="w-5 h-5 inline mr-2" />
+              Add Branch
+            </button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal
         isOpen={showEditModal}
         onClose={() => {
           setShowEditModal(false);
           resetForm();
         }}
-        title={`Edit ${selectedLocation?.type === 'ZONE' ? 'Zone' : 'Circle'}`}
+        title={`Edit ${selectedLocation?.type === 'ZONE' ? 'Zone' : selectedLocation?.type === 'CIRCLE' ? 'Circle' : 'Branch'}`}
       >
         <form onSubmit={(e) => {
           e.preventDefault();

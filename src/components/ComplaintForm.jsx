@@ -1,6 +1,9 @@
 import { useState, useContext, useEffect } from "react";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import LocationSelector from "./LocationSelector";
+import MediaUpload from "./MediaUpload";
+import toast from 'react-hot-toast';
 
 export default function ComplaintForm({ supplierId, onSuccess }) {
   const { user } = useContext(AuthContext);
@@ -17,6 +20,7 @@ export default function ComplaintForm({ supplierId, onSuccess }) {
     customer_id: user?.id || "",
     zone_id: "",
     circle_id: "",
+    branch_id: "",
     system_integrator_name: "",
     system_integrator_phone: "",
     system_integrator_email: "",
@@ -28,6 +32,8 @@ export default function ComplaintForm({ supplierId, onSuccess }) {
   const [zones, setZones] = useState([]);
   const [circles, setCircles] = useState([]);
   const [filteredCircles, setFilteredCircles] = useState([]);
+  const [mediaFiles, setMediaFiles] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setForm(f => ({
@@ -89,9 +95,13 @@ export default function ComplaintForm({ supplierId, onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!user || !user.id) {
-      alert("You must be logged in to submit a complaint.");
+      toast.error("You must be logged in to submit a complaint.");
       return;
     }
+    
+    setSubmitting(true);
+    const toastId = toast.loading('Submitting complaint...');
+    
     const payload = {
       ...form,
       customer_id: parseInt(user.id, 10),
@@ -101,8 +111,60 @@ export default function ComplaintForm({ supplierId, onSuccess }) {
       date_of_manufacture: form.date_of_manufacture,
     };
     try {
+      // Step 1: Create the complaint
       const res = await API.post("/complaints", payload);
       const complaintData = res.data.data; // { id, complaint_id, ... }
+      
+      toast.loading('Complaint created! Uploading attachments...', { id: toastId });
+      
+      // Step 2: Upload media files if any
+      if (mediaFiles && mediaFiles.length > 0) {
+        console.log(`Uploading ${mediaFiles.length} media file(s)...`);
+        const uploadPromises = mediaFiles.map(async (mediaFile) => {
+          try {
+            const formData = new FormData();
+            formData.append('file', mediaFile.file);
+            formData.append('resource_type', mediaFile.isVideo ? 'video' : 'image');
+            formData.append('complaint_id', complaintData.id);
+            
+            const uploadRes = await API.post('/upload', formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            });
+            
+            // Store attachment info in database
+            if (uploadRes.data.success) {
+              await API.post('/complaints/attachments', {
+                complaint_id: complaintData.id,
+                file_url: uploadRes.data.data.url,
+                file_name: mediaFile.name,
+                file_size: mediaFile.size,
+                mime_type: mediaFile.type,
+                public_id: uploadRes.data.data.public_id,
+              });
+            }
+            
+            return uploadRes.data;
+          } catch (uploadErr) {
+            console.error(`Failed to upload ${mediaFile.name}:`, uploadErr);
+            return { success: false, error: uploadErr.message };
+          }
+        });
+        
+        const uploadResults = await Promise.all(uploadPromises);
+        const successfulUploads = uploadResults.filter(r => r.success).length;
+        const failedUploads = uploadResults.filter(r => !r.success).length;
+        
+        if (failedUploads > 0) {
+          toast.success(`Complaint created! ${successfulUploads} file(s) uploaded, ${failedUploads} failed.`, { id: toastId });
+        } else {
+          toast.success(`Complaint created successfully with ${successfulUploads} attachment(s)!`, { id: toastId });
+        }
+      } else {
+        toast.success('Complaint created successfully!', { id: toastId });
+      }
+      
       setSubmittedComplaint(complaintData);
       
       // Call success callback if provided
@@ -121,12 +183,14 @@ export default function ComplaintForm({ supplierId, onSuccess }) {
         const errorMessages = Object.entries(err.response.data.errors)
           .map(([field, message]) => `${field}: ${message}`)
           .join("\n");
-        alert(`Validation failed:\n${errorMessages}`);
+        toast.error(`Validation failed:\n${errorMessages}`, { id: toastId, duration: 5000 });
       } else if (err.response?.data?.message) {
-        alert(`Server error: ${err.response.data.message}`);
+        toast.error(`Server error: ${err.response.data.message}`, { id: toastId });
       } else {
-        alert("Failed to submit complaint. Please try again.");
+        toast.error("Failed to submit complaint. Please try again.", { id: toastId });
       }
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -252,66 +316,21 @@ return (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             Location Information
-            <span className="text-sm font-normal text-red-500 ml-2">* (Zone required, Circle optional)</span>
+            <span className="text-sm font-normal text-red-500 ml-2">* (Zone required)</span>
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                Zone <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  name="zone_id"
-                  value={form.zone_id}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="">Select Zone</option>
-                  {zones.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      🏢 {zone.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                Circle (Optional)
-              </label>
-              <div className="relative">
-                <select
-                  name="circle_id"
-                  value={form.circle_id}
-                  onChange={handleChange}
-                  disabled={!form.zone_id}
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option value="">
-                    {form.zone_id ? 'Select Circle (Optional)' : 'Please select a zone first'}
-                  </option>
-                  {filteredCircles.map((circle) => (
-                    <option key={circle.id} value={circle.id}>
-                      🎯 {circle.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
+          <LocationSelector
+            value={{
+              zone_id: form.zone_id,
+              circle_id: form.circle_id,
+              branch_id: form.branch_id
+            }}
+            onChange={(locations) => {
+              setForm({ ...form, ...locations });
+            }}
+            required={true}
+            showLabel={false}
+          />
         </div>
 
         {/* Product Information Section */}
@@ -531,16 +550,48 @@ return (
           </div>
         </div>
 
+        {/* Media Upload Section */}
+        <div className="bg-orange-50 dark:bg-gray-700 rounded-xl p-6 border-2 border-dashed border-orange-200 dark:border-gray-600">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center">
+            <svg className="w-6 h-6 mr-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Upload Images & Videos
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">(Optional)</span>
+          </h3>
+
+          <MediaUpload
+            onFilesChange={(files) => setMediaFiles(files)}
+            maxFiles={10}
+            maxImageSize={10 * 1024 * 1024}
+            maxVideoSize={100 * 1024 * 1024}
+            multiple={true}
+          />
+        </div>
+
         {/* Submit Button */}
         <div className="pt-6 border-t border-gray-200">
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl flex items-center justify-center"
+            disabled={submitting}
+            className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl flex items-center justify-center ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            Submit Complaint
+            {submitting ? (
+              <>
+                <svg className="animate-spin h-6 w-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                Submit Complaint
+              </>
+            )}
           </button>
         </div>
       </form>
