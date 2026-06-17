@@ -1,8 +1,8 @@
 // Cloudinary Upload Utility
 // Handles file uploads to Cloudinary with size validation
 
-const IMAGE_MAX_SIZE = 500 * 1024; // 500KB
-const VIDEO_MAX_SIZE = 15 * 1024 * 1024; // 15MB
+const IMAGE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const VIDEO_MAX_SIZE = 100 * 1024 * 1024; // 100MB
 
 /**
  * Validate file size based on file type
@@ -16,14 +16,14 @@ export const validateFileSize = (file) => {
   if (isImage && file.size > IMAGE_MAX_SIZE) {
     return {
       valid: false,
-      error: `Image size must be less than 500KB. Current size: ${formatFileSize(file.size)}`
+      error: `Image size must be less than 10MB. Current size: ${formatFileSize(file.size)}`
     };
   }
   
   if (isVideo && file.size > VIDEO_MAX_SIZE) {
     return {
       valid: false,
-      error: `Video size must be less than 15MB. Current size: ${formatFileSize(file.size)}`
+      error: `Video size must be less than 100MB. Current size: ${formatFileSize(file.size)}`
     };
   }
   
@@ -194,11 +194,11 @@ export const formatFileSize = (bytes) => {
 export const getFileSizeLimits = () => ({
   image: {
     maxSize: IMAGE_MAX_SIZE,
-    maxSizeFormatted: '500 KB'
+    maxSizeFormatted: '10 MB'
   },
   video: {
     maxSize: VIDEO_MAX_SIZE,
-    maxSizeFormatted: '15 MB'
+    maxSizeFormatted: '100 MB'
   }
 });
 

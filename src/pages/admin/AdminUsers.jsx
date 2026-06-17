@@ -144,7 +144,8 @@ export default function AdminUsers() {
       toast.success('User deleted successfully');
     } catch (err) {
       console.error('Error deleting user:', err);
-      toast.error('Failed to delete user');
+      const message = err.response?.data?.message || 'Failed to delete user';
+      toast.error(message);
     }
   };
 
@@ -415,16 +416,18 @@ export default function AdminUsers() {
               {item.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
             </button>
           )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              deleteUser(item.user_id);
-            }}
-            className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete User"
-          >
-            <TrashIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-          </button>
+          {item.role !== 'ADMIN' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteUser(item.user_id);
+              }}
+              className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete User"
+            >
+              <TrashIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+            </button>
+          )}
         </div>
       )
     }

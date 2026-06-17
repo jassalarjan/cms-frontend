@@ -133,18 +133,6 @@ export default function ComplaintForm({ supplierId, onSuccess }) {
               },
             });
             
-            // Store attachment info in database
-            if (uploadRes.data.success) {
-              await API.post('/complaints/attachments', {
-                complaint_id: complaintData.id,
-                file_url: uploadRes.data.data.url,
-                file_name: mediaFile.name,
-                file_size: mediaFile.size,
-                mime_type: mediaFile.type,
-                public_id: uploadRes.data.data.public_id,
-              });
-            }
-            
             return uploadRes.data;
           } catch (uploadErr) {
             console.error(`Failed to upload ${mediaFile.name}:`, uploadErr);
